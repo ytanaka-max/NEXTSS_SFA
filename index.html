@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>NEXTsalesAI | 営業担当・顧客管理SFA</title>
+    <title>NEXTsalesAI | 行動管理・日報連動SFA</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Syne:wght@800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,51 +13,47 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Noto Sans JP', sans-serif; background: var(--sf-bg); display: flex; height: 100vh; overflow: hidden; }
 
-        /* --- SIDEBAR (完全復元版) --- */
+        /* --- SIDEBAR --- */
         .sidebar { width: 260px; background: var(--sidebar); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .nav-group { flex: 1; padding: 20px 0; overflow-y: auto; }
+        .nav-group { flex: 1; overflow-y: auto; padding: 20px 0; }
         .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #ced4da; font-size: 14px; }
-        .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
         .nav-item.active { background: var(--sf-blue); color: #fff; font-weight: 600; }
 
         .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.2); border-top: 2px solid var(--sf-blue); }
         .csv-box { margin-bottom: 15px; }
         .csv-label { font-size: 10px; font-weight: 700; color: #8a949d; margin-bottom: 8px; display: block; }
         .csv-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-csv { background: #1a2b3c; border: 1px solid #444; color: #fff; padding: 6px; font-size: 11px; border-radius: 4px; cursor: pointer; transition: 0.2s; text-align: center; }
-        .btn-csv:hover { background: var(--sf-blue); }
+        .btn-csv { background: #1a2b3c; border: 1px solid #444; color: #fff; padding: 6px; font-size: 11px; border-radius: 4px; cursor: pointer; text-align: center; }
 
-        /* --- MAIN LAYOUT --- */
+        /* --- MAIN --- */
         .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         header { background: #fff; height: 60px; border-bottom: 1px solid var(--sf-border); display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
         .content { flex: 1; overflow-y: auto; padding: 24px; }
 
-        /* --- TOP KPI (数字が潰れない設計) --- */
+        /* --- DASHBOARD ELEMENTS --- */
         .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
-        .kpi-card { background: #fff; border: 1px solid var(--sf-border); padding: 16px; border-radius: 4px; border-top: 4px solid var(--sf-blue); }
-        .kpi-title { font-size: 11px; color: #666; font-weight: 700; margin-bottom: 8px; }
-        .kpi-val { font-size: 26px; font-weight: 800; font-family: 'Syne'; color: var(--text-main); }
+        .kpi-card { background: #fff; border: 1px solid var(--sf-border); padding: 16px; border-radius: 4px; }
+        .kpi-val { font-size: 26px; font-weight: 800; font-family: 'Syne'; }
 
-        /* --- 営業担当別リスト数 (グリッド) --- */
-        .staff-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 24px; }
-        .staff-card { background: #fff; padding: 15px; border-radius: 4px; border: 1px solid var(--sf-border); cursor: pointer; transition: 0.2s; }
-        .staff-card:hover { border-color: var(--sf-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .staff-name { font-weight: 700; font-size: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .staff-stats { font-size: 12px; color: #666; display: flex; gap: 10px; }
-        .staff-count { color: var(--sf-blue); font-weight: 800; }
-
-        /* --- 14日以内アプローチ & 再架電リスト --- */
+        /* --- TABLE & LIST --- */
         .card { background: #fff; border: 1px solid var(--sf-border); border-radius: 4px; padding: 20px; margin-bottom: 24px; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { text-align: left; padding: 12px; background: #f8f9fa; color: #666; border-bottom: 2px solid var(--sf-border); }
+        th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid var(--sf-border); }
         td { padding: 12px; border-bottom: 1px solid #eee; }
-        .badge-call { background: #fff1f0; color: var(--danger); padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; border: 1px solid var(--danger); }
-        .btn-action { padding: 4px 10px; font-size: 11px; background: var(--sf-blue); color: #fff; border: none; border-radius: 4px; cursor: pointer; }
 
-        .hidden { display: none; }
+        /* 日付リンクの装飾 */
+        .date-link { color: var(--sf-blue); font-weight: bold; text-decoration: underline; cursor: pointer; }
+        .date-link:hover { color: #0056b3; }
+
+        /* 通知許可ボタン */
+        .btn-notify-req { background: var(--warning); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 10px; }
+
+        /* --- MODAL (日報表示用) --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .modal { background: #fff; width: 500px; border-radius: 8px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .modal-h { font-weight: 800; border-bottom: 2px solid var(--sf-blue); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
+        .report-body { font-size: 14px; line-height: 1.6; color: #333; white-space: pre-wrap; background: #f9f9f9; padding: 15px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -65,29 +61,27 @@
 <aside class="sidebar">
     <div class="sidebar-header">
         <div style="font-family:'Syne'; font-size:22px; font-weight:800;">NEXTsalesAI</div>
-        <div style="font-size:9px; color:#8a949d; margin-top:4px;">SALES FORCE COMMAND</div>
+        <div style="font-size:9px; color:#8a949d; margin-top:4px;">PRO-ACTIVE SFA</div>
     </div>
     <nav class="nav-group">
         <div class="nav-item active">📊 ダッシュボード</div>
         <div class="nav-item">🏢 顧客情報</div>
         <div class="nav-item">📝 営業日報</div>
-        <div class="nav-item">🎯 フェーズ進捗</div>
-        <div class="nav-item">💴 請求・支払管理</div>
     </nav>
 
     <div class="sidebar-footer">
         <div class="csv-box">
             <span class="csv-label">📋 SFA全リスト (CSV)</span>
             <div class="csv-btn-grid">
-                <button class="btn-csv" onclick="alert('Export All')">出力</button>
-                <label class="btn-csv">取込<input type="file" hidden></label>
+                <button class="btn-csv" onclick="alert('Export')">出力</button>
+                <button class="btn-csv">取込</button>
             </div>
         </div>
         <div class="csv-box">
             <span class="csv-label" style="color:var(--success)">💴 既存顧客データ (CSV)</span>
             <div class="csv-btn-grid">
                 <button class="btn-csv" style="color:var(--success)">出力</button>
-                <label class="btn-csv" style="color:var(--success)">取込<input type="file" hidden></label>
+                <button class="btn-csv" style="color:var(--success)">取込</button>
             </div>
         </div>
     </div>
@@ -95,78 +89,113 @@
 
 <main class="main">
     <header>
-        <h2 style="font-size: 18px;">営業統括ダッシュボード</h2>
-        <button class="btn-action" style="padding:8px 20px;">+ 新規案件登録</button>
+        <h2 style="font-size: 18px;">営業統括ダッシュボード 
+            <button class="btn-notify-req" onclick="requestNotification()">🔔 通知を許可する</button>
+        </h2>
+        <div id="clock" style="font-family:'DM Mono'; font-weight:bold; color:var(--sf-blue);">--:--:--</div>
     </header>
 
     <div class="content">
         <div class="kpi-row">
-            <div class="kpi-card"><div class="kpi-title">月間アポ</div><div class="kpi-val">24</div></div>
-            <div class="kpi-card"><div class="kpi-title">未経験獲得</div><div class="kpi-val">08</div></div>
-            <div class="kpi-card"><div class="kpi-title">見学会</div><div class="kpi-val" style="color:var(--warning)">12</div></div>
-            <div class="kpi-card"><div class="kpi-title">決定(受注)</div><div class="kpi-val" style="color:var(--success)">06</div></div>
-            <div class="kpi-card"><div class="kpi-title">稼働開始</div><div class="kpi-val">04</div></div>
-            <div class="kpi-card" style="border-top-color:var(--danger)"><div class="kpi-title" style="color:var(--danger)">14日未接触</div><div class="kpi-val" style="color:var(--danger)">18</div></div>
-        </div>
-
-        <div style="margin-bottom:10px; font-weight:700; font-size:14px; color:var(--text-main);">担当営業別状況</div>
-        <div class="staff-grid">
-            <div class="staff-card" onclick="filterByStaff('田中')">
-                <div class="staff-name">田中 太郎 <span>👤</span></div>
-                <div class="staff-stats">担当リスト: <span class="staff-count">142</span> | 警告: <span style="color:var(--danger)">5</span></div>
-            </div>
-            <div class="staff-card" onclick="filterByStaff('佐藤')">
-                <div class="staff-name">佐藤 次郎 <span>👤</span></div>
-                <div class="staff-stats">担当リスト: <span class="staff-count">98</span> | 警告: <span style="color:var(--danger)">3</span></div>
-            </div>
-            <div class="staff-card" onclick="filterByStaff('鈴木')">
-                <div class="staff-name">鈴木 三郎 <span>👤</span></div>
-                <div class="staff-stats">担当リスト: <span class="staff-count">115</span> | 警告: <span style="color:var(--danger)">8</span></div>
-            </div>
-            <div class="staff-card" onclick="filterByStaff('伊藤')">
-                <div class="staff-name">伊藤 四郎 <span>👤</span></div>
-                <div class="staff-stats">担当リスト: <span class="staff-count">84</span> | 警告: <span style="color:var(--danger)">2</span></div>
-            </div>
+            <div class="kpi-card"><div style="font-size:11px;color:#666;">月間アポ</div><div class="kpi-val">24</div></div>
+            <div class="kpi-card"><div style="font-size:11px;color:#666;">決定数</div><div class="kpi-val" style="color:var(--success)">06</div></div>
+            <div class="kpi-card"><div style="font-size:11px;color:#666;">14日未接触</div><div class="kpi-val" style="color:var(--danger)">18</div></div>
         </div>
 
         <div class="card">
-            <div class="card-header">
-                <div style="font-weight:700;">🚨 要フォローアップ企業（最終接触から14日以内 or 再架電設定）</div>
-                <div style="font-size:12px; color:#666;">担当者: <span id="current-filter">全員</span></div>
+            <div style="font-weight:700; margin-bottom:15px; display:flex; justify-content:space-between;">
+                🚨 重要フォローアップ・再架電リスト
+                <span style="font-size:11px; color:#888;">※日付クリックで日報を表示</span>
             </div>
             <table id="followTable">
                 <thead>
-                    <tr><th>顧客名</th><th>担当者</th><th>フェーズ</th><th>最終接触日</th><th>再架電予定</th><th>アクション</th></tr>
+                    <tr><th>顧客名</th><th>担当者</th><th>最終接触日</th><th>再架電設定</th><th>状況</th></tr>
                 </thead>
                 <tbody id="followBody">
-                    <tr>
-                        <td><strong>(株)青山建築</strong></td>
-                        <td>田中</td>
-                        <td>アポイント済</td>
-                        <td>2026/03/10</td>
-                        <td><span class="badge-call">明日 10:00</span></td>
-                        <td><button class="btn-action">日報作成</button></td>
-                    </tr>
-                    <tr>
-                        <td><strong>新宿土木 PJ</strong></td>
-                        <td>鈴木</td>
-                        <td>見学会設定</td>
-                        <td>2026/03/12</td>
-                        <td><span class="badge-call">本日 14:00</span></td>
-                        <td><button class="btn-action">日報作成</button></td>
-                    </tr>
-                </tbody>
+                    </tbody>
             </table>
         </div>
     </div>
 </main>
 
+<div class="modal-overlay" id="reportModal" onclick="closeModal(event)">
+    <div class="modal">
+        <div class="modal-h">
+            <span id="modalCustName">顧客名</span>
+            <button onclick="document.getElementById('reportModal').style.display='none'" style="border:none;background:none;cursor:pointer;">&times;</button>
+        </div>
+        <div style="font-size:12px; color:#666; margin-bottom:10px;">
+            報告者: <span id="modalStaff"></span> | 報告日: <span id="modalDate"></span>
+        </div>
+        <div class="report-body" id="modalText"></div>
+    </div>
+</div>
+
 <script>
-    function filterByStaff(name) {
-        document.getElementById('current-filter').innerText = name;
-        alert(name + " さんの「14日以内アプローチ」および「再架電リスト」を抽出します。");
-        // 実装時はここでtableの内容をfilter
+    // 擬似データベース（CSV取込を想定）
+    const db = [
+        { id: 1, name: "(株)青山建築", staff: "田中", lastContact: "2026-03-10", recallTime: "22:15", 
+          report: "見学会後のフォロー完了。予算感の不一致があるが、工期については合致。次回、修正見積を持参予定。" },
+        { id: 2, name: "新宿土木 PJ", staff: "鈴木", lastContact: "2026-03-12", recallTime: "14:00", 
+          report: "現場監督と面談。現在の外注先に不満あり。スイッチの可能性高い。26日に再度詳細のヒアリングを実施。" }
+    ];
+
+    // テーブル描画
+    function renderTable() {
+        const tbody = document.getElementById('followBody');
+        tbody.innerHTML = db.map(item => `
+            <tr>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.staff}</td>
+                <td><span class="date-link" onclick="openReport(${item.id})">${item.lastContact}</span></td>
+                <td style="color:var(--danger); font-weight:bold;">本日 ${item.recallTime}</td>
+                <td><span style="font-size:11px; background:#e6f7ff; color:var(--sf-blue); padding:2px 6px; border-radius:4px;">要架電</span></td>
+            </tr>
+        `).join('');
     }
+
+    // 日報モーダル開く
+    function openReport(id) {
+        const item = db.find(i => i.id === id);
+        document.getElementById('modalCustName').innerText = item.name;
+        document.getElementById('modalStaff').innerText = item.staff;
+        document.getElementById('modalDate').innerText = item.lastContact;
+        document.getElementById('modalText').innerText = item.report;
+        document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    // 通知許可リクエスト
+    function requestNotification() {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") alert("通知が許可されました。再架電時間にお知らせします。");
+        });
+    }
+
+    // 時計 & 通知チェックロジック
+    function startScheduler() {
+        setInterval(() => {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
+
+            // 再架電時間のチェック
+            db.forEach(item => {
+                if (item.recallTime === timeStr && now.getSeconds() === 0) {
+                    new Notification("📞 再架電の時間です", {
+                        body: `${item.name} (${item.staff}担当) への連絡予定時間です。`,
+                        icon: "https://cdn-icons-png.flaticon.com/512/5585/5585856.png"
+                    });
+                }
+            });
+        }, 1000);
+    }
+
+    function closeModal(e) { if(e.target.id === 'reportModal') e.target.style.display = 'none'; }
+
+    window.onload = () => {
+        renderTable();
+        startScheduler();
+    };
 </script>
 </body>
 </html>
