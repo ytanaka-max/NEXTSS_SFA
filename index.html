@@ -2,91 +2,331 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>SFAリスト_修正版</title>
+    <title>NEXTsalesAI | 顧客・営業管理システム</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Syne:wght@800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
-        table { border-collapse: collapse; width: 100%; font-size: 12px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; position: sticky; top: 0; }
-        tr:nth-child(even) { background-color: #fafafa; }
-        .highlight { background-color: #fff0f0; font-weight: bold; }
+        :root {
+            --sf-blue: #0176d3; --sf-bg: #f4f6f8; --sf-border: #dddbda;
+            --sidebar: #001529; --text-main: #181818; --white: #ffffff;
+            --success: #2e844a; --warning: #ff9d00; --danger: #ba0517; --gray: #8a949d;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans JP', sans-serif; background: var(--sf-bg); display: flex; height: 100vh; overflow: hidden; color: var(--text-main); }
+
+        /* --- SIDEBAR --- */
+        .sidebar { width: 240px; background: var(--sidebar); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .nav-group { flex: 1; padding: 20px 0; overflow-y: auto; }
+        .nav-label { font-size: 10px; color: var(--gray); padding: 0 24px 8px; font-weight: 700; text-transform: uppercase; }
+        .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #ced4da; font-size: 14px; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .nav-item.active { background: var(--sf-blue); color: #fff; font-weight: 600; }
+
+        /* --- MAIN --- */
+        .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        header { background: #fff; height: 60px; border-bottom: 1px solid var(--sf-border); display: flex; align-items: center; padding: 0 24px; justify-content: space-between; flex-shrink: 0; }
+        .content { flex: 1; overflow-y: auto; padding: 24px; display: none; }
+        .content.active { display: block; }
+
+        /* KPI */
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 24px; }
+        .kpi-card { background: #fff; border: 1px solid var(--sf-border); padding: 15px; border-radius: 4px; border-top: 4px solid var(--sf-blue); }
+        .kpi-val { font-size: 24px; font-weight: 800; font-family: 'Syne'; margin-top: 5px; }
+
+        /* FILTER AREA */
+        .filter-bar { background: #fff; padding: 15px; border: 1px solid var(--sf-border); border-radius: 4px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center; }
+        .search-input { flex: 1; padding: 8px 12px; border: 1px solid var(--sf-border); border-radius: 4px; }
+
+        /* TABLE */
+        .table-container { background: #fff; border: 1px solid var(--sf-border); border-radius: 4px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+        th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid var(--sf-border); position: sticky; top: 0; z-index: 10; }
+        td { padding: 12px; border-bottom: 1px solid #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        tr:hover { background: #f1f7ff; }
+        
+        .company-name { font-weight: bold; color: var(--sf-blue); cursor: pointer; }
+        .company-name:hover { text-decoration: underline; }
+        .status-badge { padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: bold; }
+        .status-ok { background: #e1f5fe; color: var(--sf-blue); }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .modal { background: #fff; width: 800px; max-height: 85vh; border-radius: 8px; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+        .modal-header { padding: 20px; background: var(--sidebar); color: #fff; display: flex; justify-content: space-between; }
+        .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+        .detail-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
+        .detail-label { font-weight: bold; color: #666; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .detail-value { font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
     </style>
 </head>
 <body>
-    <table>
-        <thead>
+
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div style="font-family:'Syne'; font-size:22px; font-weight:800; letter-spacing:-1px;">NEXTsalesAI</div>
+    </div>
+    <nav class="nav-group">
+        <div class="nav-label">Main</div>
+        <div id="nav-dashboard" class="nav-item active" onclick="showPage('dashboard')">📊 ダッシュボード</div>
+        <div id="nav-customer-info" class="nav-item" onclick="showPage('customer-info')">🏢 顧客情報リスト</div>
+        <div class="nav-item">📝 営業日報</div>
+        <div class="nav-label" style="margin-top:15px;">Tools</div>
+        <div class="nav-item" onclick="exportData()">📥 データ出力 (CSV)</div>
+    </nav>
+</aside>
+
+<main class="main">
+    <header>
+        <h2 id="header-title">ダッシュボード</h2>
+        <div id="clock" style="font-family:'DM Mono'; font-weight:bold; color:var(--sf-blue); background:#eef4ff; padding:4px 12px; border-radius:20px;">--:--:--</div>
+    </header>
+
+    <div id="page-dashboard" class="content active">
+        <div class="kpi-row">
+            <div class="kpi-card"><div style="font-size:11px;color:#666;">総アプローチ対象</div><div class="kpi-val" id="kpi-total">0</div></div>
+            <div class="kpi-card"><div style="font-size:11px;color:#666;">最終接触あり</div><div class="kpi-val" style="color:var(--success)" id="kpi-contacted">0</div></div>
+            <div class="kpi-card"><div style="font-size:11px;color:#666;">今月のアポ数</div><div class="kpi-val" style="color:var(--warning)">24</div></div>
+            <div class="kpi-card"><div style="font-size:11px;color:#666;">要フォロー</div><div class="kpi-val" style="color:var(--danger)">18</div></div>
+        </div>
+        <div style="font-weight:700; margin-bottom:15px; font-size:14px;">担当者別保有件数</div>
+        <div id="staffCounter" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:12px;"></div>
+    </div>
+
+    <div id="page-customer-info" class="content">
+        <div class="filter-bar">
+            🔍 <input type="text" id="searchInput" class="search-input" placeholder="企業名、担当者、備考内容で検索..." onkeyup="filterTable()">
+            <select id="staffFilter" onchange="filterTable()" style="padding:8px; border-radius:4px; border:1px solid var(--sf-border);">
+                <option value="">全ての担当者</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <table id="custTable">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">企業名</th>
+                        <th style="width: 15%;">支店/事業部</th>
+                        <th style="width: 12%;">職種</th>
+                        <th style="width: 10%;">担当者</th>
+                        <th style="width: 13%;">最終接触日</th>
+                        <th style="width: 25%;">最新内容</th>
+                    </tr>
+                </thead>
+                <tbody id="custBody"></tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<div class="modal-overlay" id="detailModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="det-title" style="font-size:18px;">企業詳細</h2>
+            <span onclick="closeModal()" style="cursor:pointer; font-size:24px;">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="detail-grid" id="det-content"></div>
+            <div style="margin-top:25px; padding-top:20px; border-top:2px solid #eee;">
+                <h4 style="margin-bottom:10px;">📋 備考・対応履歴詳細</h4>
+                <div id="det-memo" style="background:#f9f9f9; padding:15px; border-radius:4px; font-size:13px; line-height:1.6; white-space: pre-wrap;"></div>
+            </div>
+            <button onclick="closeModal()" style="margin-top:30px; width:100%; padding:12px; cursor:pointer; background:var(--sidebar); color:#fff; border:none; border-radius:4px;">閉じる</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // スプレッドシートからの貼り付けデータを配列化
+    // 各行をタブまたは複数スペースで分割（コピペ時の挙動に合わせる）
+    const rawData = `アネス空調		03-3913-4123	〇	2026/02/17	担当：まつした様　5/8　16時～まつしたさん退職　後任林様　いま派遣会社多すぎて制限していて人員も充足
+大成温調	東京本社	385億円	設備	https://www.taisei-oncho.co.jp/	03-5742-7331	〇	岡本部長	2024/11/20	担当者不在。明日以降再架電
+太平電業	東京本社		電気	https://www.taihei-dengyo.co.jp/	03-5213-7211	〇	浅井部長	2026/03/17	nextss.y.tanaka が更新東京支社　0366837316　派遣受入なし/　本社　都築部長 /浅井部長　5/15 9:00~
+大栄電気		03-6738-8888	〇		2026/03/17	nextss.y.tanaka が更新
+新菱冷熱工業		設備	https://www.shinryo.com/	03-3357-2151	〇		2024/10/28	本店でない。電気計装なら行けるかも
+櫻井工業	206億円	設備	〇	工事部/高柳	2026/03/18 20:10	y.tanaka
+日本電技	415億円	電気	〇	2026/03/19 16:03	k.iha	原田さん3/19　保坂業務課長　会議中　/　真鍋支店長　会議中再度 045ｰ438ｰ1211
+東急建設	2,856億円	建築	03‐5466‐5122	〇	2024/11/15	11月21日9：30　3階受付　担当者：カタヤマ様　男性3～40代　＠渋谷人材派遣　時期により興味あり
+東急建設	建築	03-5466-5008	〇	ヨシイ様
+中電工	1,571億円	電気	https://www.chudenko.co.jp/	03-6300-0680	〇	山中	2024/10/08	10/08東京本部/女性→山中さん/メアド取得10/16 11:00挨拶アポ 三好さんカウント
+大和リース	建築	〇	2026/03/19 16:04	k.iha	東京本店　村田様岡山支店：石井課長　k-ishii@daiwalease.jp 宮崎支店：松村課長　y-matumura@daiwalease.jp 山口支店：飯田課長　千葉支店：043ｰ331ｰ6180　木下様　3/25AP
+新菱冷熱工業	横浜支店	045-224-2900	〇	2025/02/03	本社で一括している
+三機工業	横浜支店	https://www.sanki.co.jp/corporate/branch_japan/	045-394-0930	〇	2025/01/22	全て東京支社にてやっている
+三機工業	1,970億円	設備	https://www.sanki.co.jp/	03-6367-7080	〇	2024/10/08	10/08女性/それぞれの部署で派遣採用しているので取り次げない
+京王建設	建築	https://www.keio-const.co.jp/	042-336-7333	〇	前山部長	2025/04/24	9/19 今週はいない→9/30男性/前山さん席外し/折り返し来るかも人材派遣は増田さんが担当/不在　5/15訪問
+中電工	電気	03-6300-0680	〇	2024/11/20	担当者不在。明日以降かけ直し
+奥村組	2,881億円	建築	https://www.okumuragumi.co.jp/	03-3454-8111	〇	2024/11/01	東京本社・東日本支店　コタケ様　11/6 15:00訪問
+ミライトワン	電気	03-6807-3111	〇	中本課長	2025/07/07	岩瀬氏　着任　土木事業部 土木CADオペは夢真からで来週から着任予定 大阪はつながりがあまりないので、紹介できそうならまた連絡しますと
+トーヨーアサノ	その他	https://www.toyoasano.co.jp/about/factory.html	03-3356-3173	〇	2025/04/30	5/8　おおつぼ様宛　単価表（40万切ってくる会社がある…）アーキ付き合いあり山西部長：いま中途で人が入ってきてて4月末で研修終わるからちょうどいいかもと。
+テクノ菱和	684億円	設備	〇	工務部/柴田
+テイエム技建	〇	坂内様	1月9日17:00＠新橋
+オイレスECO		03ｰ5435ｰ5465	〇	伊賀様
+アクア	〇	香月代表	2025/05/20	香月社長　まだ人足りない。34歳以下で男性・免許ありであればOK
+三井住友建設	横浜支店	建築	https://www.smcon.co.jp/company/branch/	045-393-1807	〇	建築グループ長 ナカジマ 様	2026/03/19 16:31	k.iha	また4月入ってから連絡頂戴と。人材について派遣で検討したい現場もあるので打合せしたい。
+国土防災技術	https://www.jce.co.jp/company/	03-3436-3673	〇	2025/05/07	さいたま技術本部　048-833-0422　こんどう支社長　5/13　15時～
+呉光塗装	その他	047-365-1531	〇	大塚	2026/03/19 16:25	k.iha	担当：大塚様　現状いらないが、たまに補助を依頼することがある。6/17訪問　盆明けから必要になるかも。松戸付近在住の男性　未経験可。免許はなくてもOKお休み来週再度
+五洋建設	6,177億円	建築	https://www.penta-ocean.co.jp/index.html	03-3817-7600	〇	岡村設備部長	東京建築支店:クサノ様 10/2 11:00訪問2/6　設備部：03ｰ3817ｰ8725　打ち合わせ中
+戸田建設	5,224億円	建築	03‐4582‐3142	045‐228‐8937（横浜支店田中）	〇	スガワラ様（横浜支店）	2024/11/15	興味あり、ただ11月が忙しい為、12月に顔合わせをしたい 11月の最終週にもう一度連絡することを約束（横浜支店
+栗原工業	電気	03-6400-3006	伊波	〇	2025/12/25	工事管理部　原岡次長（現場出ずっぱ）横浜支店：045-311-6281　羽淵様　本日お休み　今充足しているので不要かと 川崎営業所：044-288-5591　鳥羽様　いま充足してる。必要な時は助け求めるからよろしくと。北関東支社：048-833-1200　1/6　外出戻りなし
+熊谷組	4,431億円	建築	03-3260-1148	〇	2025/11/17	建築部はROKUでの募集のみ。新卒も同様で今年度は終了。kenchiku-haken@ku.kumagaigumi.co.jp　派遣契約窓口：小林様
+九電工（クラフティア）	4,048億円	電気	03-3980-8194	伊波	〇	2026/01/23	電気）今新規取引先を増やすきはない 03ｰ5927ｰ8713　（CAD室）末永様東京支店：03-3980-8613　電気:小林課長　新規お断りしている
+丸藤シートパイル	〇	かわた様	2025/02/06	2/18 16:00アポ
+関電工	5,208億円	電気	伊波	〇	東京支店：050(3133)0458　現状充足　埼玉支店：050(3132)4196　12/24　さいき様：現状充足　新卒はキャリア人財部 栃木支店：050(3033)8501　わかつき様　4/1716時以降　4/18AM
+麦島建設	建築	https://www.mugishima.com/	03-3288-1055	〇	2024/11/15	11月19日10；00　担当：クドウ様　＠市ヶ谷即ＯＫ
+大洋	東京本店	https://www.taiyo-group.com/	03-6228-3777	〇	〇	2025/06/27	4/9でオンライン打ち合わせアポ katou@7/4　14時～AP訪問
+大都	https://www.daito.biz/about/company.html	03-3584-0125	〇	小林様	2025/02/05	2/10 16:00アポ
+大勝建設	https://www.dainet.co.jp/gaiyo.html		〇	藤岡専務	ふじはら副支店長（東京）	2025/04/24	藤岡専務はGW明まで東京にいない。ふじはら副支店長（土木兼任）から折り返しさせてもらえると5/1　東京支店　ふじはら副支店長/　6/13　東京支店にて藤岡専務　9時～
+スターツＣＡＭ	建築	03-6895-7701	〇	木村部長	2024/11/20	担当者不在。明日以降再架電上野の代わりはみつかった。経験者であれば随時紹介してほしいよと。
+コマニー	西東京営業所	042ｰ306ｰ6357	〇	中村所長	2025/09/22	9/26　訪問AP
+きんでん	5,599億円	電気	045‐683‐3456（横浜	03-5475-0191（東京）	伊波	〇	2025/12/24	折り返ししますとのこと。03‐62774611を伝達 不要＠東京 横浜支店⇒担当打合せ中再度
+オーク設備工業	設備	03-3553-2965	伊波	〇	〇	2024/11/20	担当者不在。明日以降再架電ウシジマ様　メールアドレス取得 ryou.ushijima@oaksetsubi.co.jp
+イオンディライトコネクト	電気	〇	2024/11/26	11/26 訪問　菅原様
+アペックエンジニアリング	設備	https://www.apeceng.co.jp/	０４８６５０７７７８	〇	2024/11/19	11月27日10:30　工務部　イシダ様随時人員の募集はかけている。
+アーバンストラクション	建築	https://www.sky-field.co.jp/company/urbanstruction/	03-6758-4193	〇	篠崎健司/代表取締役	2024/11/08	１１月１３日１６:００より商談
+TMES	設備	https://www.tm-es.co.jp/	03‐3687‐3201	〇	2025/05/07	担当がHP見て興味あれば
+ou2	建築	0120-214-202	〇	2024/11/05	本社よりかけ直しを致します。03‐6277‐4611へ折返し依頼
+淺沼組	1,526億円	建築	https://www.asanuma.co.jp/	03-5232-5840	〇	尾崎工事部長	2024/11/11	11月18日10:00＠東京本店5F建築部　田町駅　東京本店　ヤスイ様
+雄電社	電気	03-3786-1161	〇	2025/12/19	問い合わせフォームより問い合わせください。11/12日問い合わせ済み東京本社：佐藤部長 横浜支店：045-312-1621　現場ごと→石塚支店長
+野村不動産パートナーズ	〇	きくち様	2025/02/06	2/21 11:00~ アポイント　建築インテリア２部
+明電舎	1,843億円	電気	https://www.meidensha.co.jp/corporate/corp_07/corp_07_01/	03-6420-8400	〇	2024/11/05	齊藤が電気設備のイベントで接触からのアポ訪問 プラント系
+北野建設	建築	https://www.kitano.co.jp/corporate/outline/	03-3562-2331	〇	2025/06/30	7/1 11:30~ 工務部 和田様
+菱和設備	設備	http://www.ryowa-s.co.jp/outline/index.html	03-3205-8131	尾上	〇	鈴木	2026/03/23	11月26日訪問予定　担当者スズキ様9：30　＠高田馬場即ＯＫ 3/23　東京支店：鈴木さん不在
+入沢工務店	建築	http://www.irisawakoumuten.co.jp/	03-3638-1456	〇	〇	かんべ	2026/02/03	2月にアポになる。45万～と新卒40万～と伝え、元夢真と伝えたら納得してくれた2/26　明日再度
+日本設備工業	設備	https://www.nihonsetsubi.co.jp/	03-4213-4900	〇	〇	2026/01/15	こちらから折り返しますと03-4213-4911　東京支店　鈴木あきのり様
+日本ビソー	その他	https://www.bisoh.co.jp/	03-5444-3889	尾上	〇	永井部長	2026/03/23	第一工事部佐野様アポ 11/6 17:30永井部長管轄でOK
+日比谷総合設備	720億円	設備	https://www.hibiya-eng.co.jp/ja/index.html	03-34531291	尾上	〇	古里部長宛	2026/03/10	都市設備本部　10/1　古里部長宛（東京本店　15時30分～） 2026/3/10　打ち合わせ地獄
+日成ビルド工業	東京本店	https://www.nisseibuild.co.jp/company/network.html	03-4554-3164	伊波	〇	のざき部長	2026/01/09	野崎部長：6/19訪問深沢様：CADオペはいま現状不要になった。
+南海辰村建設	建築	03-3547-4061	〇	〇	坂根	2025/12/24	新卒うまいこと採用できてるっぽいが一応社内でも共有しておきますと。
+東鉄工業	千葉支店	建築	043-251-8221	〇	サノ様	2026/03/18	ご挨拶承諾。12月にまた連絡ください。別件対応中で手が離せない。明日再度
+青木あすなろ建設	建築	03-5439-8523	〇	いわたに工事部長	2026/03/19	とみた様10/15挨拶訪問 岩谷工事部長　外出戻りなし再度`;
+
+    let db = [];
+    
+    // データ初期化
+    function initData() {
+        const rows = rawData.trim().split('\n');
+        db = rows.map((line, index) => {
+            const cols = line.split('\t');
+            return {
+                id: index,
+                company: cols[0] || '-',
+                branch: cols[1] || '-',
+                sales: cols[2] || '-',
+                jobType: cols[3] || '-',
+                url: cols[4] || '#',
+                tel: cols[5] || '-',
+                staff: cols[6] || '-',
+                keyman: cols[7] || '-',
+                lastContact: cols[8] || '-',
+                memo: cols[9] || '-'
+            };
+        });
+        
+        // 担当者フィルタの生成
+        const staffs = [...new Set(db.map(d => d.staff))].filter(s => s && s !== '-');
+        const filterSelect = document.getElementById('staffFilter');
+        staffs.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.innerText = s;
+            filterSelect.appendChild(opt);
+        });
+
+        renderTable(db);
+        updateKPI();
+    }
+
+    function renderTable(data) {
+        const body = document.getElementById('custBody');
+        body.innerHTML = data.map(d => `
             <tr>
-                <th>企業名</th>
-                <th>支店名/事業部</th>
-                <th>売上高</th>
-                <th>職種</th>
-                <th>電話番号</th>
-                <th>アポイント</th>
-                <th>最終接触日</th>
-                <th>内容/備考</th>
+                <td><span class="company-name" onclick="openDetail(${d.id})">${d.company}</span></td>
+                <td>${d.branch}</td>
+                <td><span class="status-badge status-ok">${d.jobType}</span></td>
+                <td>${d.staff}</td>
+                <td>${d.lastContact}</td>
+                <td title="${d.memo}">${d.memo}</td>
             </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="highlight">アネス</td>
-                <td></td>
-                <td></td>
-                <td>空調</td>
-                <td>03-3913-4123</td>
-                <td>〇</td>
-                <td>2026/02/17</td>
-                <td>担当：まつした様 5/8 16時～ まつしたさん退職 後任林様</td>
-            </tr>
-            <tr>
-                <td>大成温調</td>
-                <td>東京本社</td>
-                <td>385億円</td>
-                <td>設備</td>
-                <td>03-5742-7331</td>
-                <td>〇</td>
-                <td>2024/11/20</td>
-                <td>担当者不在。明日以降再架電</td>
-            </tr>
-            <tr>
-                <td>太平電業</td>
-                <td>東京本社</td>
-                <td></td>
-                <td>電気</td>
-                <td>03-5213-7211</td>
-                <td>〇</td>
-                <td>2026/03/17</td>
-                <td>東京支社 0366837316 派遣受入なし/ 本社 都築部長 /浅井部長 5/15 9:00~</td>
-            </tr>
-            <tr>
-                <td>大栄電気</td>
-                <td></td>
-                <td></td>
-                <td>電気</td>
-                <td>03-6738-8888</td>
-                <td>〇</td>
-                <td>2026/03/17</td>
-                <td>nextss.y.tanaka が更新</td>
-            </tr>
-            <tr>
-                <td>新菱冷熱工業</td>
-                <td></td>
-                <td></td>
-                <td>設備</td>
-                <td>03-3357-2151</td>
-                <td>〇</td>
-                <td>2024/10/28</td>
-                <td>本店でない。電気計装なら行けるかも</td>
-            </tr>
-            <tr>
-                <td>櫻井工業</td>
-                <td></td>
-                <td>206億円</td>
-                <td>設備</td>
-                <td></td>
-                <td>〇</td>
-                <td>2026/03/18</td>
-                <td>工事部/高柳 y.tanaka</td>
-            </tr>
-            </tbody>
-    </table>
+        `).join('');
+    }
+
+    function filterTable() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const staffVal = document.getElementById('staffFilter').value;
+        
+        const filtered = db.filter(d => {
+            const matchText = d.company.toLowerCase().includes(searchText) || 
+                              d.memo.toLowerCase().includes(searchText) ||
+                              d.keyman.toLowerCase().includes(searchText);
+            const matchStaff = staffVal === "" || d.staff === staffVal;
+            return matchText && matchStaff;
+        });
+        renderTable(filtered);
+    }
+
+    function openDetail(id) {
+        const d = db.find(x => x.id === id);
+        const grid = document.getElementById('det-content');
+        grid.innerHTML = `
+            <div class="detail-label">企業名</div><div class="detail-value"><strong>${d.company}</strong></div>
+            <div class="detail-label">支店/事業部</div><div class="detail-value">${d.branch}</div>
+            <div class="detail-label">売上高</div><div class="detail-value">${d.sales}</div>
+            <div class="detail-label">職種</div><div class="detail-value">${d.jobType}</div>
+            <div class="detail-label">電話番号</div><div class="detail-value">${d.tel}</div>
+            <div class="detail-label">URL</div><div class="detail-value"><a href="${d.url}" target="_blank">${d.url}</a></div>
+            <div class="detail-label">リスト担当者</div><div class="detail-value">${d.staff}</div>
+            <div class="detail-label">キーマン</div><div class="detail-value">${d.keyman}</div>
+            <div class="detail-label">最終接触日</div><div class="detail-value">${d.lastContact}</div>
+        `;
+        document.getElementById('det-memo').innerText = d.memo;
+        document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('detailModal').style.display = 'none';
+    }
+
+    function showPage(pageId) {
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        document.getElementById('nav-' + pageId).classList.add('active');
+        document.getElementById('header-title').innerText = document.getElementById('nav-' + pageId).innerText;
+    }
+
+    function updateKPI() {
+        document.getElementById('kpi-total').innerText = db.length;
+        const contacted = db.filter(d => d.lastContact !== '-').length;
+        document.getElementById('kpi-contacted').innerText = contacted;
+
+        // 担当者別集計
+        const counts = {};
+        db.forEach(d => { if(d.staff !== '-') counts[d.staff] = (counts[d.staff] || 0) + 1; });
+        
+        const counterHtml = Object.entries(counts).map(([name, count]) => `
+            <div class="kpi-card" style="border-top:3px solid #ccc">
+                <div style="font-size:11px; color:#666;">${name}</div>
+                <div class="kpi-val" style="font-size:18px;">${count} <span style="font-size:10px; font-weight:normal;">社</span></div>
+            </div>
+        `).join('');
+        document.getElementById('staffCounter').innerHTML = counterHtml;
+    }
+
+    function exportData() {
+        let csv = "企業名,支店名,売上高,職種,URL,電話番号,リスト担当者,キーマン名,最終接触日,内容\n";
+        db.forEach(d => {
+            csv += `"${d.company}","${d.branch}","${d.sales}","${d.jobType}","${d.url}","${d.tel}","${d.staff}","${d.keyman}","${d.lastContact}","${d.memo.replace(/"/g, '""')}"\n`;
+        });
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+        const blob = new Blob([bom, csv], { type: "text/csv;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "Customer_List_Full.csv";
+        a.click();
+    }
+
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    
+    // 起動
+    window.onload = initData;
+</script>
 </body>
 </html>
