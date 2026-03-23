@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>NEXTsalesAI | CSVエクスポート実装版</title>
+    <title>NEXTsalesAI | CSV完全制御版</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Syne:wght@800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -20,20 +20,23 @@
         .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #ced4da; font-size: 14px; }
         .nav-item.active { background: var(--sf-blue); color: #fff; font-weight: 600; }
 
-        /* CSV FOOTER */
+        /* CSV FOOTER (改修) */
         .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.2); border-top: 2px solid var(--sf-blue); }
         .csv-box { margin-bottom: 15px; }
         .csv-label { font-size: 10px; font-weight: 700; color: #8a949d; margin-bottom: 8px; display: block; }
         .csv-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-csv { background: #1a2b3c; border: 1px solid #444; color: #fff; padding: 6px; font-size: 11px; border-radius: 4px; cursor: pointer; text-align: center; border: none; width: 100%; }
-        .btn-csv:hover { background: var(--sf-blue); }
+        .btn-csv { 
+            background: #1a2b3c; border: 1px solid #444; color: #fff; padding: 8px; 
+            font-size: 11px; border-radius: 4px; cursor: pointer; text-align: center; 
+            display: inline-block; transition: 0.2s;
+        }
+        .btn-csv:hover { background: var(--sf-blue); border-color: var(--sf-blue); }
 
         /* --- MAIN --- */
         .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         header { background: #fff; height: 60px; border-bottom: 1px solid var(--sf-border); display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
         .content { flex: 1; overflow-y: auto; padding: 24px; }
 
-        /* TABLE */
         .card { background: #fff; border: 1px solid var(--sf-border); border-radius: 4px; padding: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid var(--sf-border); }
@@ -45,7 +48,7 @@
 <aside class="sidebar">
     <div class="sidebar-header">
         <div style="font-family:'Syne'; font-size:22px; font-weight:800;">NEXTsalesAI</div>
-        <div style="font-size:9px; color:#8a949d; margin-top:4px;">CSV MASTER UTILITY</div>
+        <div style="font-size:9px; color:#8a949d; margin-top:4px;">CSV DATA ENGINE</div>
     </div>
     <nav class="nav-group">
         <div class="nav-item active">📊 ダッシュボード</div>
@@ -56,15 +59,15 @@
         <div class="csv-box">
             <span class="csv-label">📋 SFA全リスト (CSV)</span>
             <div class="csv-btn-grid">
-                <button class="btn-csv" onclick="downloadCSV()">エクスポート</button>
-                <button class="btn-csv" onclick="alert('取込用ファイルを読み込んでください')">取込</button>
+                <div class="btn-csv" onclick="exportData('sfa_list')">エクスポート</div>
+                <label class="btn-csv">取込 <input type="file" hidden accept=".csv" onchange="importCSV(this, 'sfa')"></label>
             </div>
         </div>
         <div class="csv-box">
             <span class="csv-label" style="color:var(--success)">💴 既存顧客データ (CSV)</span>
             <div class="csv-btn-grid">
-                <button class="btn-csv" style="color:var(--success)" onclick="downloadCSV('existing')">エクスポート</button>
-                <button class="btn-csv" style="color:var(--success)">取込</button>
+                <div class="btn-csv" style="color:var(--success)" onclick="exportData('existing_list')">エクスポート</div>
+                <label class="btn-csv" style="color:var(--success)">取込 <input type="file" hidden accept=".csv" onchange="importCSV(this, 'existing')"></label>
             </div>
         </div>
     </div>
@@ -72,13 +75,13 @@
 
 <main class="main">
     <header>
-        <h2 style="font-size: 18px;">データ管理センター</h2>
-        <div style="font-size: 12px; color: #666;">CSV形式: UTF-8 (BOM付き)</div>
+        <h2 id="view-title">顧客データ管理</h2>
+        <div style="font-size: 12px; color: var(--sf-blue); font-weight: bold;" id="data-status">データ読込完了</div>
     </header>
 
     <div class="content">
         <div class="card">
-            <div style="margin-bottom:15px; font-weight:700;">現在のシステム内データ</div>
+            <div style="margin-bottom:15px; font-weight:700; color:var(--text-main);">データビューワー</div>
             <table id="dataTable">
                 <thead>
                     <tr><th>企業名</th><th>担当者</th><th>フェーズ</th><th>最終接触日</th><th>再架電予定</th><th>日報</th></tr>
@@ -91,56 +94,84 @@
 </main>
 
 <script>
-    // 基となるデータセット
-    const customerData = [
+    // システム内メモリ（初期値）
+    let currentData = [
         { name: "大林組 横浜現場", staff: "田中", phase: "見学会", date: "2026-03-20", recall: "10:00", report: "好感触。見積提示済み。" },
-        { name: "清水建設 渋谷PJ", staff: "佐藤", phase: "アプローチ", date: "2026-03-15", recall: "14:00", report: "不在のため再送。来週アポ。" },
-        { name: "鹿島建設 千葉支店", staff: "鈴木", phase: "決定", date: "2026-03-22", recall: "11:30", report: "契約完了。稼働準備へ。" }
+        { name: "清水建設 渋谷PJ", staff: "佐藤", phase: "アプローチ", date: "2026-03-15", recall: "14:00", report: "不在。来週アポ再設定。" }
     ];
 
-    // テーブル表示用
+    // --- 【改修】エクスポート機能 ---
+    function exportData(fileName) {
+        // ヘッダー作成
+        const header = "企業名,担当者,フェーズ,最終接触日,再架電予定,日報\n";
+        // 行データ作成（カンマ区切り、改行含む）
+        const rows = currentData.map(d => 
+            `${d.name},${d.staff},${d.phase},${d.date},${d.recall},${d.report}`
+        ).join("\n");
+
+        const csvContent = header + rows;
+        
+        // 文字化け防止BOM (UTF-8)
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+        const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
+        
+        // ダウンロード処理
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${fileName}_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log("Export Success:", fileName);
+    }
+
+    // --- 【改修】インポート機能 ---
+    function importCSV(input, type) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split(/\r\n|\n/);
+            const newData = [];
+
+            // 1行目はヘッダーなので飛ばす
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === "") continue;
+                const cols = lines[i].split(",");
+                if (cols.length >= 6) {
+                    newData.push({
+                        name: cols[0], staff: cols[1], phase: cols[2],
+                        date: cols[3], recall: cols[4], report: cols[5]
+                    });
+                }
+            }
+
+            if (newData.length > 0) {
+                currentData = newData; // メモリを更新
+                renderTable(); // 表示を更新
+                document.getElementById('data-status').innerText = `取込完了 (${newData.length}件)`;
+                alert(`${type.toUpperCase()} データを ${newData.length} 件取り込みました。`);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // テーブル描画
     function renderTable() {
         const body = document.getElementById('dataBody');
-        body.innerHTML = customerData.map(c => `
+        body.innerHTML = currentData.map(c => `
             <tr>
                 <td><strong>${c.name}</strong></td>
                 <td>${c.staff}</td>
                 <td>${c.phase}</td>
                 <td>${c.date}</td>
                 <td>${c.recall}</td>
-                <td style="color:#888; font-size:11px;">${c.report}</td>
+                <td style="color:#666; font-size:11px;">${c.report}</td>
             </tr>
         `).join('');
-    }
-
-    // ★ CSVエクスポートの核心ロジック
-    function downloadCSV(type = 'all') {
-        // 1. ヘッダーを定義
-        let csvContent = "企業名,担当者,フェーズ,最終接触日,再架電予定,日報\n";
-
-        // 2. データをCSV形式の文字列に変換
-        customerData.forEach(row => {
-            const line = [row.name, row.staff, row.phase, row.date, row.recall, row.report].join(",");
-            csvContent += line + "\n";
-        });
-
-        // 3. 日本語文字化け防止用 (BOM)
-        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-        const blob = new Blob([bom, csvContent], { type: "text/csv;charset=utf-8;" });
-        
-        // 4. ダウンロード用リンクを生成してクリックさせる
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        const fileName = type === 'all' ? "sfa_target_list.csv" : "existing_customer_list.csv";
-        
-        link.setAttribute("href", url);
-        link.setAttribute("download", fileName);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        alert(fileName + " を書き出しました。\nこのファイルをベースに編集して取り込んでください。");
     }
 
     window.onload = renderTable;
