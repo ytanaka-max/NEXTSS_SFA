@@ -343,9 +343,17 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   </nav>
   <div class="sidebar-footer">
     <button class="btn btn-primary" style="width:100%;font-size:12px;margin-bottom:6px;" onclick="openModal('addCustomer')">＋ 企業追加</button>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
-      <button class="btn btn-ghost" style="font-size:11px;padding:6px 8px;" onclick="exportCSV()">📥 CSV出力</button>
-      <label class="btn btn-ghost" style="font-size:11px;padding:6px 8px;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;">📤 CSV取込<input type="file" id="csvImportFile" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"></label>
+    <!-- SFA CSV -->
+    <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.4px;margin-bottom:3px;padding:0 2px;">📋 SFAリスト</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+      <button class="btn btn-ghost" style="font-size:11px;padding:6px 8px;" onclick="exportCSV()">📥 出力</button>
+      <label class="btn btn-ghost" style="font-size:11px;padding:6px 8px;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;">📤 取込<input type="file" id="csvImportFile" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"></label>
+    </div>
+    <!-- Existing customer CSV -->
+    <div style="font-size:10px;color:var(--success);font-weight:600;letter-spacing:.4px;margin-bottom:3px;padding:0 2px;">💴 既存顧客</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+      <button class="btn btn-ghost" style="font-size:11px;padding:6px 8px;color:var(--success);border-color:var(--success);" onclick="exportExistingCSV()">📥 出力</button>
+      <label class="btn btn-ghost" style="font-size:11px;padding:6px 8px;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;color:var(--success);border-color:var(--success);">📤 取込<input type="file" id="existingImportFile" accept=".csv" style="display:none;" onchange="importExistingCSV(this.files[0])"></label>
     </div>
     <button class="btn btn-ghost" style="width:100%;font-size:11px;padding:6px 8px;" onclick="openListManager()">📋 リスト管理</button>
   </div>
@@ -483,6 +491,8 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 </div><!-- /mobile-main -->
 
 <button class="fab" onclick="openModal('addCustomer')">＋</button>
+<button class="fab" id="fab-csv" onclick="exportCSV()" style="right:76px;background:var(--success);font-size:16px;" title="CSV出力">📥</button>
+<label class="fab" id="fab-import" style="right:138px;background:var(--accent2);font-size:16px;cursor:pointer;" title="CSV取込">📤<input type="file" accept=".csv" style="display:none;" onchange="importCSV(this.files[0])"></label>
 
 <!-- MODAL: Add Customer -->
 <div class="modal-overlay" id="modal-addCustomer" onclick="if(event.target===this)closeModal('addCustomer')">
@@ -497,7 +507,7 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       <div class="form-group"><label class="form-label">業種</label>
         <select class="form-select" id="c-industry"><option value="">選択</option><option>建築</option><option>設備</option><option>電気</option><option>土木</option><option>空調</option><option>計装</option><option>プラント</option><option>その他</option></select></div>
       <div class="form-group"><label class="form-label">ステータス</label>
-        <select class="form-select" id="c-status" onchange="chkLimit(this)">
+        <select class="form-select" id="c-status" onchange="chkLimit(this);toggleBillingFields()">
           <option value="未顧客">未顧客</option><option value="既存顧客">既存顧客</option>
           <option value="田中追い">田中追い</option><option value="伊波追い">伊波追い</option><option value="尾上追い">尾上追い</option>
         </select>
@@ -508,7 +518,32 @@ textarea.form-input { resize: vertical; min-height: 80px; }
       <div class="form-group"><label class="form-label">キーマン名</label><input class="form-input" id="c-name" placeholder="山田 部長"></div>
     </div>
     <div class="form-group"><label class="form-label">URL</label><input class="form-input" id="c-url" type="url" placeholder="https://example.com"></div>
-    <div class="form-group"><label class="form-label">メモ・備考</label><textarea class="form-input" id="c-memo" rows="3" placeholder="商談メモ・備考など"></textarea></div>
+    <div class="form-group"><label class="form-label">メモ・備考</label><textarea class="form-input" id="c-memo" rows="2" placeholder="商談メモ・備考など"></textarea></div>
+    <!-- 既存顧客のみ表示 -->
+    <div id="billing-fields" style="display:none;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:10px;padding:12px 14px;margin-top:4px;">
+      <div style="font-size:11px;font-weight:700;color:var(--success);margin-bottom:10px;letter-spacing:.3px;">💴 請求・支払情報（既存顧客）</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">締め日</label><input class="form-input" id="c-closeDay" placeholder="末日 / 20日 / 10日"></div>
+        <div class="form-group"><label class="form-label">早締め</label>
+          <select class="form-select" id="c-earlyClose"><option value="">なし</option><option value="有り">有り</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">支払日（入金日）</label><input class="form-input" id="c-payDay" placeholder="翌月末 / 翌々25日"></div>
+        <div class="form-group"><label class="form-label">請求方法</label>
+          <select class="form-select" id="c-sendMethod">
+            <option value="">選択</option>
+            <option value="メールのみ可">メールのみ可</option>
+            <option value="郵送のみ">郵送のみ</option>
+            <option value="メール&郵送">メール＆郵送</option>
+          </select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">送付先メールアドレス</label><input class="form-input" id="c-email" type="email" placeholder="billing@example.com"></div>
+        <div class="form-group"><label class="form-label">宛先</label><input class="form-input" id="c-emailTo" placeholder="経理部 山田様"></div>
+      </div>
+      <div class="form-group"><label class="form-label">送付先住所（郵送の場合）</label><input class="form-input" id="c-address" placeholder="〒000-0000 東京都…"></div>
+      <div class="form-group"><label class="form-label">請求備考</label><input class="form-input" id="c-billingNote" placeholder="勤務カード有り 等"></div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('addCustomer')">キャンセル</button>
       <button class="btn btn-primary" onclick="addCustomer()">追加する</button>
@@ -813,9 +848,21 @@ function renderCustomers(){
     const mail=c.email?`<a href="mailto:${esc(c.email)}" class="cust-email" onclick="event.stopPropagation()">✉ ${esc(c.email)}</a>`:`<span style="color:var(--text3);font-size:11px;">—</span>`;
     // Approach status
     const ap=getApproachStatus(c);
-    const apDot=ap.ok?'#059669':ap.hasHistory?'#dc2626':'#d1d5db';
-    const apText=ap.ok?`✓ アプローチ可（${ap.days}日経過）`:ap.hasHistory?`✕ 禁止中（残${14-ap.days}日）`:'初回アプローチ可';
-    const apStyle=ap.ok?'color:#065f46;background:#d1fae5;border:1px solid #6ee7b7;':ap.hasHistory?'color:#dc2626;background:#fef2f2;border:1px solid #fca5a5;':'color:#6b7280;background:#f3f4f6;border:1px solid #d1d5db;';
+    let apDot, apText, apStyle;
+    if (c.status === '既存顧客') {
+      apDot='#dc2626'; apText='🔒 既存顧客（アプローチ禁止）';
+      apStyle='color:#dc2626;background:#fef2f2;border:1px solid #fca5a5;';
+    } else if (!ap.hasHistory) {
+      apDot='#d1d5db'; apText='初回アプローチ可';
+      apStyle='color:#6b7280;background:#f3f4f6;border:1px solid #d1d5db;';
+    } else if (ap.ok) {
+      apDot='#059669';
+      apText=ap.sameStaff?`✓ 同一担当で可（${ap.days}日経過）`:`✓ アプローチ可（${ap.days}日経過）`;
+      apStyle='color:#065f46;background:#d1fae5;border:1px solid #6ee7b7;';
+    } else {
+      apDot='#dc2626'; apText=`✕ 禁止中（残${14-ap.days}日）`;
+      apStyle='color:#dc2626;background:#fef2f2;border:1px solid #fca5a5;';
+    }
     const contactCnt=(c.contacts||[]).length;
     return `<div class="cust-card" style="cursor:pointer;" onclick="openCompanyDetail(${c.id})">
       <div class="cust-top">
@@ -853,21 +900,31 @@ function renderCustomers(){
 }
 
 // ════ APPROACH STATUS LOGIC ════
-function getApproachStatus(c) {
+function getApproachStatus(c, currentStaff) {
+  // 既存顧客は常にアプローチ禁止
+  if (c.status === '既存顧客') {
+    return { ok: false, hasHistory: true, days: 0, isExisting: true };
+  }
   const contacts = c.contacts || [];
   if (!contacts.length) return { ok: true, hasHistory: false, days: null };
-  // Find latest contact date
+  // Find latest contact date overall
   let latest = null;
+  let latestStaff = '';
   contacts.forEach(ct => {
     const d = new Date(ct.date);
-    if (!latest || d > latest) latest = d;
+    if (!latest || d > latest) { latest = d; latestStaff = ct.staff || ''; }
   });
   if (!latest) return { ok: true, hasHistory: false, days: null };
   const today = new Date();
   today.setHours(0,0,0,0);
   latest.setHours(0,0,0,0);
   const days = Math.floor((today - latest) / (1000*60*60*24));
-  return { ok: days >= 14, hasHistory: true, days };
+  if (days >= 14) return { ok: true, hasHistory: true, days };
+  // Within 14 days — check if same staff
+  if (currentStaff && latestStaff && currentStaff === latestStaff) {
+    return { ok: true, hasHistory: true, days, sameStaff: true };
+  }
+  return { ok: false, hasHistory: true, days };
 }
 
 function getLatestContactDate(c) {
@@ -895,17 +952,7 @@ function openCompanyDetail(id) {
   document.getElementById('cd-meta').textContent = [c.industry, c.keyname ? `👤 ${c.keyname}` : '', c.phone || ''].filter(Boolean).join(' · ');
 
   // Approach badge in header
-  const ap = getApproachStatus(c);
-  const latestDate = getLatestContactDate(c);
-  let badgeHtml;
-  if (!ap.hasHistory) {
-    badgeHtml = `<span class="approach-none">🔵 初回可</span>`;
-  } else if (ap.ok) {
-    badgeHtml = `<span class="approach-ok">✓ アプローチ可<br><span style="font-size:10px;font-weight:400;">最終: ${latestDate}（${ap.days}日経過）</span></span>`;
-  } else {
-    badgeHtml = `<span class="approach-ng">✕ 禁止中（残${14-ap.days}日）<br><span style="font-size:10px;font-weight:400;">最終: ${latestDate}</span></span>`;
-  }
-  document.getElementById('cd-approach-badge').innerHTML = badgeHtml;
+  document.getElementById('cd-approach-badge').innerHTML = buildApproachBadge(c);
 
   // Render body
   renderCompanyDetailBody(c);
@@ -1065,17 +1112,7 @@ function changeStatusDetail(id, sel) {
   // Re-render the approach badge
   const c = state.companies.find(x => x.id === id);
   if (!c) return;
-  const ap = getApproachStatus(c);
-  const latestDate = getLatestContactDate(c);
-  let badgeHtml;
-  if (!ap.hasHistory) {
-    badgeHtml = `<span class="approach-none">🔵 初回可</span>`;
-  } else if (ap.ok) {
-    badgeHtml = `<span class="approach-ok">✓ アプローチ可<br><span style="font-size:10px;font-weight:400;">最終: ${latestDate}（${ap.days}日経過）</span></span>`;
-  } else {
-    badgeHtml = `<span class="approach-ng">✕ 禁止中（残${14-ap.days}日）<br><span style="font-size:10px;font-weight:400;">最終: ${latestDate}</span></span>`;
-  }
-  document.getElementById('cd-approach-badge').innerHTML = badgeHtml;
+  document.getElementById('cd-approach-badge').innerHTML = buildApproachBadge(c);
 }
 
 function addContact(cid) {
@@ -1140,6 +1177,10 @@ function deleteCustomer(id){
 }
 
 // ════ ADD CUSTOMER ════
+function toggleBillingFields() {
+  const isExisting = document.getElementById('c-status').value === '既存顧客';
+  document.getElementById('billing-fields').style.display = isExisting ? 'block' : 'none';
+}
 function chkLimit(sel){
   const w=document.getElementById('limitWarn');
   if(CHASE.includes(sel.value)&&countByStatus(sel.value)>=LIMIT){w.style.display='block';w.textContent=`⚠ ${sel.value}は上限${LIMIT}件です`;}
@@ -1151,6 +1192,21 @@ function addCustomer(){
   const status=document.getElementById('c-status').value;
   if(CHASE.includes(status)&&countByStatus(status)>=LIMIT) return alert(`「${status}」は上限${LIMIT}件です。`);
   const {date}=nowDT();
+  // Billing info (only if 既存顧客)
+  let existingInfo = null;
+  if (status === '既存顧客') {
+    const closeDay = document.getElementById('c-closeDay').value.trim();
+    const earlyClose = document.getElementById('c-earlyClose').value;
+    const payDay = document.getElementById('c-payDay').value.trim();
+    const sendMethod = document.getElementById('c-sendMethod').value;
+    const email = document.getElementById('c-email').value.trim();
+    const emailTo = document.getElementById('c-emailTo').value.trim();
+    const address = document.getElementById('c-address').value.trim();
+    const note = document.getElementById('c-billingNote').value.trim();
+    if (closeDay||payDay||sendMethod) {
+      existingInfo = { closeDay, earlyClose, payDay, sendMethod, email, emailTo, address, note };
+    }
+  }
   state.companies.unshift({
     id:Date.now(), company,
     branch:document.getElementById('c-branch').value.trim(),
@@ -1159,10 +1215,13 @@ function addCustomer(){
     keyname:document.getElementById('c-name').value.trim(),
     url:document.getElementById('c-url').value.trim(),
     memo:document.getElementById('c-memo').value.trim(),
-    status, chaser:'', lastContact:date, existingInfo:null, activities:[],
+    status, lastContact:date, existingInfo, contacts:[],
   });
   closeModal('addCustomer');
-  ['c-company','c-branch','c-phone','c-name','c-url','c-memo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['c-company','c-branch','c-phone','c-name','c-url','c-memo',
+   'c-closeDay','c-payDay','c-email','c-emailTo','c-address','c-billingNote'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('c-status').value='未顧客';
+  document.getElementById('billing-fields').style.display='none';
   renderCustomers(); renderDashboard();
 }
 
@@ -1540,7 +1599,7 @@ function exportListCSV(listId) {
 </script>
 
 <!-- LIST MANAGER MODAL -->
-<div id="modal-listManager" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeModal('listManager')">
+<div id="modal-listManager" class="modal-overlay" onclick="if(event.target===this)closeModal('listManager')">
   <div class="modal-box" style="max-width:620px;max-height:90vh;overflow-y:auto;">
     <div class="modal-header">
       <div class="modal-title">📋 リスト管理</div>
