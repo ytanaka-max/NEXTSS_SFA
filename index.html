@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>NEXTsalesAI | 営業・既存統合管理</title>
+    <title>NEXTsalesAI | 顧客・営業管理システム</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Syne:wght@800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -19,39 +19,38 @@
         .nav-group { flex: 1; padding: 20px 0; overflow-y: auto; }
         .nav-label { font-size: 10px; color: var(--gray); padding: 0 24px 8px; font-weight: 700; text-transform: uppercase; }
         .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #ced4da; font-size: 14px; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
         .nav-item.active { background: var(--sf-blue); color: #fff; font-weight: 600; }
 
         .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.3); border-top: 2px solid var(--sf-blue); }
-        .csv-box { margin-bottom: 15px; }
         .csv-label { font-size: 10px; font-weight: 700; color: var(--gray); margin-bottom: 8px; display: block; }
-        .csv-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .csv-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
         .btn-csv { background: #1a2b3c; border: none; color: #fff; padding: 8px; font-size: 11px; border-radius: 4px; cursor: pointer; text-align: center; }
 
         /* --- MAIN --- */
         .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         header { background: #fff; height: 60px; border-bottom: 1px solid var(--sf-border); display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
-        .content { flex: 1; overflow-y: auto; padding: 24px; display: none; } /* デフォルト非表示 */
+        .content { flex: 1; overflow-y: auto; padding: 24px; display: none; }
         .content.active { display: block; }
 
-        /* KPI & CARDS */
+        /* KPI */
         .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 24px; }
         .kpi-card { background: #fff; border: 1px solid var(--sf-border); padding: 20px; border-radius: 4px; border-top: 4px solid var(--sf-blue); }
         .kpi-val { font-size: 28px; font-weight: 800; font-family: 'Syne'; }
 
-        /* TABLE CUSTOM */
+        /* TABLE */
         .card { background: #fff; border: 1px solid var(--sf-border); border-radius: 4px; padding: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid var(--sf-border); }
         td { padding: 12px; border-bottom: 1px solid #eee; }
         
-        /* BADGE */
         .badge-existing { background: var(--success); color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px; }
-        .btn-disabled { background: #eee !important; color: #aaa !important; cursor: not-allowed !important; }
         .company-link { color: var(--sf-blue); font-weight: bold; cursor: pointer; text-decoration: underline; }
+        .btn-action { background: var(--sf-blue); color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; }
 
         /* MODAL */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; }
-        .modal { background: #fff; width: 750px; max-height: 90vh; border-radius: 8px; padding: 30px; overflow-y: auto; }
+        .modal { background: #fff; width: 750px; max-height: 90vh; border-radius: 8px; padding: 30px; overflow-y: auto; position: relative; }
     </style>
 </head>
 <body>
@@ -62,28 +61,24 @@
     </div>
     <nav class="nav-group">
         <div class="nav-label">Main</div>
-        <div class="nav-item active" onclick="showPage('dashboard')">📊 ダッシュボード</div>
-        <div class="nav-item" onclick="showPage('customer-info')">🏢 顧客情報</div>
-        <div class="nav-item" onclick="showPage('existing-list')">💴 既存顧客リスト</div>
+        <div id="nav-dashboard" class="nav-item active" onclick="showPage('dashboard')">📊 ダッシュボード</div>
+        <div id="nav-customer-info" class="nav-item" onclick="showPage('customer-info')">🏢 顧客情報</div>
+        <div id="nav-existing-list" class="nav-item" onclick="showPage('existing-list')">💴 既存顧客リスト</div>
         <div class="nav-item">📝 営業日報</div>
         <div class="nav-label" style="margin-top:15px;">Management</div>
         <div class="nav-item">📈 売上予測</div>
     </nav>
 
     <div class="sidebar-footer">
-        <div class="csv-box">
-            <span class="csv-label">📋 SFAリスト取込(A-I)</span>
-            <div class="csv-btn-grid">
-                <button class="btn-csv" onclick="exportSFA()">出力</button>
-                <label class="btn-csv">取込 <input type="file" hidden onchange="importSFA(this)"></label>
-            </div>
+        <span class="csv-label">📋 SFAリスト取込(A-I)</span>
+        <div class="csv-btn-grid">
+            <button class="btn-csv" onclick="exportSFA()">出力</button>
+            <label class="btn-csv">取込 <input type="file" hidden onchange="importSFA(this)"></label>
         </div>
-        <div class="csv-box">
-            <span class="csv-label" style="color:var(--success)">💴 既存データ取込(A-H)</span>
-            <div class="csv-btn-grid">
-                <button class="btn-csv" style="color:var(--success)" onclick="exportExisting()">出力</button>
-                <label class="btn-csv" style="color:var(--success)">取込 <input type="file" hidden onchange="importExisting(this)"></label>
-            </div>
+        <span class="csv-label" style="color:var(--success)">💴 既存データ取込(A-H)</span>
+        <div class="csv-btn-grid">
+            <button class="btn-csv" style="color:var(--success)" onclick="exportExisting()">出力</button>
+            <label class="btn-csv" style="color:var(--success)">取込 <input type="file" hidden onchange="importExisting(this)"></label>
         </div>
     </div>
 </aside>
@@ -98,19 +93,20 @@
         <div class="kpi-row">
             <div class="kpi-card"><div style="font-size:11px;color:#666;">総アプローチ対象</div><div class="kpi-val" id="kpi-total">0</div></div>
             <div class="kpi-card"><div style="font-size:11px;color:#666;">既存顧客数</div><div class="kpi-val" id="kpi-existing" style="color:var(--success)">0</div></div>
-            <div class="kpi-card"><div style="font-size:11px;color:#666;">決定(受注)</div><div class="kpi-val">6</div></div>
-            <div class="kpi-card"><div style="font-size:11px;color:#666;">要フォロー</div><div class="kpi-val" style="color:var(--danger)">18</div></div>
+            <div class="kpi-card"><div style="font-size:11px;color:#666;">今月のアポ数</div><div class="kpi-val">24</div></div>
+            <div class="kpi-card"><div style="font-size:11px;color:#666;">要フォロー案件</div><div class="kpi-val" style="color:var(--danger)">18</div></div>
         </div>
-        <div style="font-weight:700; margin-bottom:15px; font-size:14px;">担当別・保有企業数</div>
-        <div id="staffCounter" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px;"></div>
+        <div style="font-weight:700; margin-bottom:15px; font-size:14px; color:#444;">担当別・保有案件数</div>
+        <div id="staffCounter" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px;">
+            </div>
     </div>
 
     <div id="page-customer-info" class="content">
         <div class="card">
-            <div style="font-weight:700; margin-bottom:15px;">🏢 顧客情報 (全アプローチリスト)</div>
+            <div style="font-weight:700; margin-bottom:15px; border-bottom: 2px solid var(--sf-blue); padding-bottom: 10px;">🏢 顧客情報リスト (新規・アプローチ用)</div>
             <table id="custTable">
                 <thead>
-                    <tr><th>企業名（支店）</th><th>担当者</th><th>キーマン</th><th>最終接触日時</th><th>ステータス</th><th>操作</th></tr>
+                    <tr><th>企業名（支店名）</th><th>担当者</th><th>キーマン</th><th>最終接触日時</th><th>ステータス</th><th>操作</th></tr>
                 </thead>
                 <tbody id="custBody"></tbody>
             </table>
@@ -119,10 +115,10 @@
 
     <div id="page-existing-list" class="content">
         <div class="card">
-            <div style="font-weight:700; margin-bottom:15px; color:var(--success);">💴 既存顧客管理台帳</div>
+            <div style="font-weight:700; margin-bottom:15px; color:var(--success);">💴 既存顧客管理台帳 (請求・入金情報)</div>
             <table id="exTable">
                 <thead>
-                    <tr><th>企業名</th><th>締め日</th><th>入金日</th><th>送付方法</th><th>メールアドレス</th></tr>
+                    <tr><th>企業名</th><th>締め日</th><th>入金日</th><th>請求書送付方法</th><th>メールアドレス</th></tr>
                 </thead>
                 <tbody id="exBody"></tbody>
             </table>
@@ -136,56 +132,49 @@
             <h2 id="det-name">企業名</h2>
             <div id="det-badge"></div>
         </div>
-        <hr style="margin:20px 0; opacity:0.2;">
+        <hr style="margin:20px 0; opacity:0.1;">
+        <div id="det-fields" style="display:grid; grid-template-columns:1fr 1fr; gap:15px; font-size:13px; margin-bottom:30px;"></div>
         
-        <div id="det-fields" style="display:grid; grid-template-columns:1fr 1fr; gap:15px; font-size:13px; margin-bottom:30px;">
-            </div>
-
         <div id="approach-section">
-            <h4 style="margin-bottom:10px;">⚡ 新規アプローチ記録</h4>
-            <div style="display:flex; gap:10px; background:#f9f9f9; padding:15px; border-radius:4px;">
+            <h4 style="margin-bottom:10px;">⚡ アプローチ記録入力</h4>
+            <div style="display:flex; gap:10px; background:#f4f6f8; padding:15px; border-radius:4px;">
                 <select id="act-type" style="padding:8px;"><option>電話</option><option>メール</option><option>訪問</option></select>
-                <input type="text" id="act-memo" placeholder="詳細を入力してください..." style="flex:1; padding:8px; border:1px solid #ddd;">
-                <button id="act-submit" class="btn-csv" style="background:var(--sf-blue); width:120px;" onclick="addActivity()">記録保存</button>
+                <input type="text" id="act-memo" placeholder="交渉内容を入力..." style="flex:1; padding:8px; border:1px solid #ddd;">
+                <button class="btn-action" onclick="addActivity()">履歴を保存</button>
             </div>
         </div>
-        
         <div id="det-history" style="margin-top:20px;"></div>
         <button onclick="document.getElementById('detailModal').style.display='none'" style="margin-top:30px; width:100%; padding:12px; cursor:pointer; background:#333; color:#fff; border:none; border-radius:4px;">閉じる</button>
     </div>
 </div>
 
 <script>
-    // データベース
-    let db_sfa = [];       // SFAリスト
-    let db_existing = [];  // 既存顧客リスト
+    let db_sfa = [];
+    let db_existing = [];
     let selectedId = null;
 
-    // ページ切り替え
     function showPage(pageId) {
         document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById('page-' + pageId).classList.add('active');
-        document.getElementById('header-title').innerText = 
-            pageId === 'dashboard' ? 'ダッシュボード' : (pageId === 'customer-info' ? '顧客情報' : '既存顧客リスト');
+        document.getElementById('nav-' + pageId).classList.add('active');
+        document.getElementById('header-title').innerText = document.getElementById('nav-' + pageId).innerText;
         renderAll();
     }
 
-    // CSV取込: SFA (A-I)
     function importSFA(input) {
         const reader = new FileReader();
         reader.onload = (e) => {
             const lines = e.target.result.split(/\r\n|\n/).slice(1);
             db_sfa = lines.filter(l => l).map((line, i) => {
                 const c = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/"/g, ''));
-                return { id: 'sfa_'+i, name:c[0], branch:c[1], sales:c[2], category:c[3], url:c[4], tel:c[5], staff:c[6], keyman:c[7], content:c[8], history:[] };
+                return { id:'sfa_'+i, name:c[0], branch:c[1], sales:c[2], category:c[3], url:c[4], tel:c[5], staff:c[6], keyman:c[7], content:c[8], history:[] };
             });
             renderAll();
         };
         reader.readAsText(input.files[0]);
     }
 
-    // CSV取込: 既存 (A-H)
     function importExisting(input) {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -200,37 +189,35 @@
     }
 
     function renderAll() {
-        // 1. 顧客情報テーブル
+        // 顧客情報リスト
         const custBody = document.getElementById('custBody');
         custBody.innerHTML = db_sfa.map(s => {
             const isEx = db_existing.some(ex => ex.name === s.name);
             return `<tr>
                 <td><span class="company-link" onclick="openDetail('${s.id}')">${s.name} ${s.branch ? '('+s.branch+')' : ''}</span>
                     ${isEx ? '<span class="badge-existing">既存顧客</span>' : ''}</td>
-                <td>${s.staff}</td>
-                <td>${s.keyman}</td>
+                <td>${s.staff}</td><td>${s.keyman}</td>
                 <td>${s.history[0] ? s.history[0].time : '-'}</td>
-                <td>${isEx ? 'アプローチ不可' : '新規対象'}</td>
-                <td><button class="btn-csv ${isEx ? 'btn-disabled' : ''}" style="background:var(--sf-blue)" 
-                    onclick="${isEx ? '' : `openDetail('${s.id}')`}" ${isEx ? 'disabled' : ''}>${isEx ? '禁止' : '記録'}</button></td>
+                <td>${isEx ? '<span style="color:var(--gray)">営業禁止</span>' : '<span style="color:var(--sf-blue)">新規対象</span>'}</td>
+                <td><button class="btn-action" onclick="openDetail('${s.id}')">詳細/履歴</button></td>
             </tr>`;
         }).join('');
 
-        // 2. 既存顧客リストテーブル
+        // 既存顧客リスト
         document.getElementById('exBody').innerHTML = db_existing.map(e => `
             <tr><td><strong>${e.name}</strong></td><td>${e.close}</td><td>${e.pay}</td><td>${e.method}</td><td>${e.email}</td></tr>
         `).join('');
 
-        // 3. ダッシュボードKPI
+        // KPI集計
         document.getElementById('kpi-total').innerText = db_sfa.length;
         document.getElementById('kpi-existing').innerText = db_existing.length;
         
         const counts = {};
         db_sfa.forEach(s => counts[s.staff] = (counts[s.staff] || 0) + 1);
         document.getElementById('staffCounter').innerHTML = ['田中','佐藤','鈴木','伊藤'].map(n => `
-            <div class="kpi-card" style="padding:15px">
-                <div style="font-size:11px; color:#666;">${n} 担当</div>
-                <div class="kpi-val" style="font-size:20px; color:var(--sf-blue)">${counts[n] || 0} <span style="font-size:10px">社</span></div>
+            <div class="kpi-card" style="padding:15px; border-top: 3px solid #ccc;">
+                <div style="font-size:11px; color:#666;">${n} 担当件数</div>
+                <div class="kpi-val" style="font-size:20px;">${counts[n] || 0} <span style="font-size:10px">社</span></div>
             </div>
         `).join('');
     }
@@ -241,19 +228,19 @@
         const exData = db_existing.find(ex => ex.name === s.name);
         
         document.getElementById('det-name').innerText = s.name + (s.branch ? " " + s.branch : "");
-        document.getElementById('det-badge').innerHTML = exData ? '<span class="badge-existing" style="font-size:14px; padding:5px 10px;">既存顧客（営業禁止）</span>' : '';
+        document.getElementById('det-badge').innerHTML = exData ? '<span class="badge-existing" style="font-size:12px; padding:4px 8px;">既存顧客（アプローチ禁止）</span>' : '';
         
         document.getElementById('det-fields').innerHTML = `
             <div><strong>売上高:</strong> ${s.sales}</div><div><strong>業種:</strong> ${s.category}</div>
             <div><strong>電話番号:</strong> ${s.tel}</div><div><strong>キーマン:</strong> ${s.keyman}</div>
             <div style="grid-column: span 2;"><strong>URL:</strong> <a href="${s.url}" target="_blank">${s.url}</a></div>
-            <div style="grid-column: span 2; background:#eee; padding:10px;"><strong>内容(初期):</strong> ${s.content}</div>
+            <div style="grid-column: span 2; background:#f0f0f0; padding:10px; border-radius:4px;"><strong>元データ内容:</strong> ${s.content}</div>
         `;
 
         if(exData) {
             document.getElementById('approach-section').style.display = 'none';
-            document.getElementById('det-fields').innerHTML += `<div style="grid-column: span 2; color:var(--success); font-weight:bold; border:2px solid var(--success); padding:10px; margin-top:10px;">
-                【既存顧客情報一致】<br>締め日: ${exData.close} / 入金日: ${exData.pay} / 請求先: ${exData.email}</div>`;
+            document.getElementById('det-fields').innerHTML += `<div style="grid-column: span 2; color:var(--success); font-weight:bold; border:1px solid var(--success); padding:10px; margin-top:10px; border-radius:4px;">
+                【既存顧客マッチング済み】<br>締め: ${exData.close} / 入金: ${exData.pay} / 請求先: ${exData.email}</div>`;
         } else {
             document.getElementById('approach-section').style.display = 'block';
         }
@@ -264,11 +251,9 @@
 
     function addActivity() {
         const s = db_sfa.find(x => x.id === selectedId);
-        const type = document.getElementById('act-type').value;
         const memo = document.getElementById('act-memo').value;
-        if(!memo) return alert('メモを入力してください');
-        
-        s.history.unshift({ time: new Date().toLocaleString(), type, memo });
+        if(!memo) return;
+        s.history.unshift({ time: new Date().toLocaleString(), type: document.getElementById('act-type').value, memo: memo });
         document.getElementById('act-memo').value = '';
         renderHistory();
         renderAll();
@@ -276,11 +261,31 @@
 
     function renderHistory() {
         const s = db_sfa.find(x => x.id === selectedId);
-        document.getElementById('det-history').innerHTML = '<h4>接触履歴</h4>' + s.history.map(h => `
-            <div style="border-left:3px solid var(--sf-blue); padding-left:10px; margin-top:10px; font-size:12px;">
+        document.getElementById('det-history').innerHTML = '<h4 style="margin:15px 0 10px;">アプローチ履歴</h4>' + (s.history.length ? s.history.map(h => `
+            <div style="border-left:3px solid var(--sf-blue); padding:8px 12px; background:#f9f9f9; margin-bottom:8px; font-size:12px;">
                 <strong>${h.time} [${h.type}]</strong><br>${h.memo}
             </div>
-        `).join('');
+        `).join('') : '<p style="color:#999; font-size:12px;">履歴はありません。</p>');
+    }
+
+    // CSV出力機能 (仕様厳守)
+    function exportSFA() {
+        const header = "企業名,支店名,売上高,業種,URL,電話番号,リスト担当者,キーマン名,内容\n";
+        const rows = db_sfa.map(d => `"${d.name}","${d.branch}","${d.sales}","${d.category}","${d.url}","${d.tel}","${d.staff}","${d.keyman}","${d.content}"`).join("\n");
+        saveCSV(header + rows, "SFA_Master.csv");
+    }
+    function exportExisting() {
+        const header = "企業名,先方指定請求書の有無,締め日,早締め対応有無,必着日,入金日,請求書送付方法,請求用メールアドレス\n";
+        const rows = db_existing.map(d => `"${d.name}","${d.inv}","${d.close}","${d.fast}","${d.limit}","${d.pay}","${d.method}","${d.email}"`).join("\n");
+        saveCSV(header + rows, "Existing_Master.csv");
+    }
+    function saveCSV(content, filename) {
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+        const blob = new Blob([bom, content], { type: "text/csv;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
     }
 
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
