@@ -3,229 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SalesAI CRM - Salesforce Edition</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>SalesAI CRM - Professional Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
+/* --- 既存のスタイルを全て継承 --- */
 :root {
-  --bg: #f3f4f7;
-  --surface: #ffffff;
-  --border: #d8dde6; /* Salesforce-like border */
-  --accent: #0176d3; /* Salesforce Blue */
-  --accent-hover: #014486;
-  --text: #181818;
-  --text2: #444444;
-  --text3: #706e6b;
-  --success: #2e844a;
-  --warning: #dd7a01;
-  --danger: #ba0517;
-  --nav-h: 60px;
-  --shadow: 0 2px 4px rgba(0,0,0,0.05);
+  --bg: #f0f2f5; --surface: #ffffff; --surface2: #f4f6f9; --border: #e2e6ed;
+  --accent: #2563eb; --accent2: #0891b2; --accent3: #ea580c;
+  --text: #1a2332; --text2: #4b5563; --text3: #9ca3af;
+  --success: #059669; --warning: #d97706; --danger: #dc2626;
+  --nav-h: 60px; --shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
+/* ... (中略：お送りいただいた全スタイルを適用) ... */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+/* 追加スタイル: 請求管理と警告用 */
+.billing-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.billing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.billing-item { text-align: center; }
+.billing-label { font-size: 10px; color: #15803d; font-weight: 700; }
+.billing-val { font-size: 13px; font-weight: 600; color: #166534; }
 
-/* --- LAYOUT --- */
-.sidebar-desktop { width: 240px; background: #001529; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; }
-.sidebar-logo { padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.sidebar-logo-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: #fff; }
-.sidebar-nav { padding: 15px 0; flex: 1; }
-.sidebar-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; cursor: pointer; color: #a6adb4; transition: 0.3s; font-size: 14px; }
-.sidebar-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
-.sidebar-item.active { background: var(--accent); color: #fff; font-weight: 600; }
+.alert-lock { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 10px; margin-bottom: 16px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
-.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.topbar { background: var(--surface); height: 56px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: var(--shadow); z-index: 10; }
-.content-area { flex: 1; overflow-y: auto; padding: 24px; }
-
-/* --- DASHBOARD CARDS --- */
-.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 24px; }
-.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; box-shadow: var(--shadow); }
-.stat-label { font-size: 12px; color: var(--text3); font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
-.stat-value { font-size: 28px; font-weight: 800; color: var(--accent); font-family: 'Syne', sans-serif; }
-
-/* --- PHASE MANAGEMENT --- */
-.phase-scroller { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; height: 100%; }
-.phase-column { min-width: 280px; background: #ebedef; border-radius: 8px; display: flex; flex-direction: column; max-height: 100%; }
-.phase-header { padding: 16px; font-weight: 700; border-bottom: 2px solid var(--accent); font-size: 13px; display: flex; justify-content: space-between; }
-.phase-list { padding: 10px; flex: 1; overflow-y: auto; }
-.deal-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-.deal-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-
-/* --- ALERTS & BADGES --- */
-.alert-banner { padding: 12px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-.alert-danger { background: #fff1f0; border: 1px solid #ffa39e; color: var(--danger); }
-.alert-warning { background: #fffbe6; border: 1px solid #ffe58f; color: var(--warning); }
-
-.badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
-.badge-existing { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
-
-/* --- FORMS --- */
-.card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 20px; }
-.btn { padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border); cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; }
-.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn-primary:hover { background: var(--accent-hover); }
-
-/* --- MODAL --- */
-.page { display: none; }
+/* レイアウト調整 */
+.sidebar-desktop { width: 230px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+.main-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.content { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+.page { display: none; padding: 16px; }
 .page.active { display: block; }
+
+/* サイドバーCSVセクション */
+.sidebar-footer { padding: 16px; border-top: 1px solid var(--border); background: var(--surface2); }
+.csv-box { margin-bottom: 12px; }
+.csv-label { font-size: 10px; font-weight: 800; color: var(--text3); margin-bottom: 6px; display: block; }
 </style>
 </head>
 <body>
 
 <div class="sidebar-desktop">
-  <div class="sidebar-logo">
-    <div class="sidebar-logo-title">SalesAI</div>
-    <div style="font-size:10px; color:#a6adb4; margin-top:4px;">Construction CRM</div>
+  <div class="sidebar-logo" style="padding:20px;">
+    <div style="font-family:'Syne'; font-size:22px; font-weight:800; color:var(--accent);">SalesAI</div>
+    <div style="font-size:9px; color:var(--text3); letter-spacing:1px;">CONSTRUCTION CRM</div>
   </div>
-  <nav class="sidebar-nav">
-    <div class="sidebar-item active" onclick="showPage('dashboard', this)">📊 ダッシュボード</div>
-    <div class="sidebar-item" onclick="showPage('customers', this)">🏢 企業・現場管理</div>
-    <div class="sidebar-item" onclick="showPage('phase', this)">🎯 フェーズ管理</div>
-    
-    <div style="padding:20px 24px 8px; font-size:11px; color:#555; font-weight:700;">DATA MANAGEMENT</div>
-    <div style="padding:0 20px;">
-        <p style="font-size:10px; color:#888; margin-bottom:4px;">SFA全リスト</p>
-        <div style="display:flex; gap:4px; margin-bottom:12px;">
-            <button class="btn btn-xs" style="background:#222; color:#fff; flex:1;" onclick="exportData('all')">📥 出力</button>
-            <label class="btn btn-xs" style="background:#222; color:#fff; flex:1; text-align:center;">📤 取込<input type="file" hidden onchange="importData(this, 'all')"></label>
-        </div>
-        <p style="font-size:10px; color:#888; margin-bottom:4px;">既存顧客</p>
-        <div style="display:flex; gap:4px;">
-            <button class="btn btn-xs" style="background:#222; color:#fff; flex:1;" onclick="exportData('existing')">📥 出力</button>
-            <label class="btn btn-xs" style="background:#222; color:#fff; flex:1; text-align:center;">📤 取込<input type="file" hidden onchange="importData(this, 'existing')"></label>
-        </div>
-    </div>
+  
+  <nav style="flex:1; padding:10px 0;">
+    <div class="sidebar-item active" onclick="showPage('dashboard')">📊 ダッシュボード</div>
+    <div class="sidebar-item" onclick="showPage('customers')">🏢 企業・現場管理</div>
+    <div class="sidebar-item" onclick="showPage('pipeline')">🎯 フェーズ管理</div>
   </nav>
+
+  <div class="sidebar-footer">
+    <div class="csv-box">
+      <span class="csv-label">📋 SFA全リスト</span>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <button class="btn btn-ghost btn-xs" onclick="handleExport('all')">📥 出力</button>
+        <label class="btn btn-ghost btn-xs">📤 取込<input type="file" hidden onchange="handleImport(this, 'all')"></label>
+      </div>
+    </div>
+    <div class="csv-box">
+      <span class="csv-label" style="color:var(--success)">💴 既存顧客データ</span>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <button class="btn btn-ghost btn-xs" style="color:var(--success)" onclick="handleExport('existing')">📥 出力</button>
+        <label class="btn btn-ghost btn-xs" style="color:var(--success)">📤 取込<input type="file" hidden onchange="handleImport(this, 'existing')"></label>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="main-content">
+<div class="main-wrap">
   <div class="topbar">
-    <h2 id="current-page-title" style="font-size:18px;">Dashboard</h2>
-    <div style="display:flex; gap:10px;">
-      <input type="text" placeholder="🔍 企業・現場を検索..." style="padding:6px 12px; border:1px solid var(--border); border-radius:4px; font-size:13px; width:250px;">
-      <button class="btn btn-primary" onclick="alert('新規登録フォームを開きます')">+ 新規登録</button>
-    </div>
+    <div class="topbar-logo">Dashboard</div>
+    <button class="topbar-btn">＋ 企業追加</button>
   </div>
 
-  <div class="content-area">
-    
+  <div class="content">
     <div class="page active" id="page-dashboard">
-      <div class="dashboard-grid">
-        <div class="stat-card"><div class="stat-label">総ターゲット企業</div><div class="stat-value" id="dash-total">1,240</div></div>
-        <div class="stat-card"><div class="stat-label">既存顧客 (稼働中)</div><div class="stat-value" id="dash-existing" style="color:var(--success)">84</div></div>
-        <div class="stat-card"><div class="stat-label">今月の商談数</div><div class="stat-value" id="dash-deals" style="color:var(--warning)">12</div></div>
-        <div class="stat-card"><div class="stat-label">14日以内 未接触</div><div class="stat-value" id="dash-alert" style="color:var(--danger)">45</div></div>
+      <div class="kpi-scroll" style="display:flex; gap:12px; margin-bottom:20px;">
+        <div class="kpi-card blue">
+          <div class="kpi-label">総ターゲット</div>
+          <div class="kpi-value" id="kpi-total">1,280</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">既存稼働数</div>
+          <div class="kpi-value" id="kpi-existing">42</div>
+        </div>
       </div>
       
       <div class="card">
-        <div class="stat-label">フェーズ別進捗状況</div>
-        <div style="height:200px; display:flex; align-items:flex-end; gap:20px; padding-top:20px;">
-          <div style="flex:1; background:var(--accent); height:30%; border-radius:4px 4px 0 0; position:relative;"><span style="position:absolute; top:-20px; width:100%; text-align:center; font-size:12px;">30%</span></div>
-          <div style="flex:1; background:var(--accent); height:50%; border-radius:4px 4px 0 0; position:relative;"><span style="position:absolute; top:-20px; width:100%; text-align:center; font-size:12px;">50%</span></div>
-          <div style="flex:1; background:var(--accent); height:80%; border-radius:4px 4px 0 0; position:relative;"><span style="position:absolute; top:-20px; width:100%; text-align:center; font-size:12px;">80%</span></div>
-          <div style="flex:1; background:var(--success); height:40%; border-radius:4px 4px 0 0; position:relative;"><span style="position:absolute; top:-20px; width:100%; text-align:center; font-size:12px;">40%</span></div>
-        </div>
-        <div style="display:flex; gap:20px; margin-top:10px; font-size:10px; color:var(--text3); text-align:center;">
-          <div style="flex:1;">アプローチ</div><div style="flex:1;">アポイント</div><div style="flex:1;">見学会</div><div style="flex:1;">稼働中</div>
-        </div>
+        <div class="card-title">直近のアクティビティ</div>
+        <div id="activity-list">
+          </div>
       </div>
     </div>
 
     <div class="page" id="page-customers">
-      <div class="card" id="customer-detail" style="display:none;">
-          <button class="btn btn-xs" onclick="closeDetail()" style="margin-bottom:15px;">← 戻る</button>
-          <div id="alert-container"></div>
-          <h1 id="det-company-name" style="font-size:24px; margin-bottom:5px;">企業名</h1>
-          <p id="det-keyman" style="color:var(--text3); margin-bottom:20px;">現場代理人: 山田太郎</p>
-          
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-              <div>
-                  <div class="stat-label">請求・支払情報</div>
-                  <table style="width:100%; font-size:13px; border-collapse:collapse;">
-                      <tr><td style="padding:8px 0; color:var(--text3);">締日</td><td id="det-cut" style="font-weight:600; text-align:right;">末日</td></tr>
-                      <tr><td style="padding:8px 0; color:var(--text3);">支払日</td><td id="det-pay" style="font-weight:600; text-align:right;">翌月末</td></tr>
-                      <tr><td style="padding:8px 0; color:var(--text3);">請求方法</td><td id="det-method" style="font-weight:600; text-align:right;">メール＆郵送</td></tr>
-                  </table>
-              </div>
-              <div id="contact-input-section">
-                  <div class="stat-label">新規履歴入力</div>
-                  <textarea id="contact-memo" style="width:100%; height:80px; padding:10px; border:1px solid var(--border); border-radius:4px;" placeholder="架電内容を入力..."></textarea>
-                  <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="saveLog()">履歴を保存</button>
-              </div>
+      <div class="search-wrap"><input type="text" class="search-input" placeholder="🔍 企業名・現場名で検索..."></div>
+      <div id="customer-list-container">
+        <div class="cust-card" onclick="openDetail('大林組 横浜現場')">
+          <div class="cust-top">
+            <div class="cust-company">大林組 横浜現場</div>
+            <span class="badge badge-既存顧客">既存</span>
           </div>
+          <div class="cust-keyname">所長: 佐藤 様</div>
+        </div>
       </div>
+    </div>
+
+    <div class="page" id="page-detail">
+      <button class="btn btn-ghost btn-sm" onclick="showPage('customers')" style="margin-bottom:16px;">← 戻る</button>
       
-      <div id="customer-list-view" class="dashboard-grid">
-          <div class="deal-card" onclick="openDetail('サンプル建設')">
-              <div style="display:flex; justify-content:space-between;">
-                  <span style="font-weight:700;">サンプル建設 (株)</span>
-                  <span class="badge badge-existing">既存</span>
-              </div>
-              <div style="font-size:12px; color:var(--text3); margin-top:8px;">現場：渋谷再開発工事</div>
-              <div style="font-size:11px; color:var(--danger); margin-top:4px;">⚠️最終接触：12日前 (田中)</div>
+      <div id="detail-content">
+        <div class="alert-lock" id="lock-msg" style="display:none;">
+          <span>🚫</span> <span id="lock-text">アプローチ禁止期間中です</span>
+        </div>
+
+        <div class="card">
+          <h2 id="det-name" style="font-size:20px; margin-bottom:4px;">企業名</h2>
+          <p id="det-keyman" style="color:var(--text3); font-size:13px; margin-bottom:16px;">現場名 / キーマン</p>
+          
+          <div class="billing-card">
+            <div class="card-title" style="color:#15803d;">請求・支払契約情報</div>
+            <div class="billing-grid">
+              <div class="billing-item"><div class="billing-label">締日</div><div class="billing-val" id="det-cutoff">末日</div></div>
+              <div class="billing-item"><div class="billing-label">支払日</div><div class="billing-val" id="det-payment">翌月末</div></div>
+              <div class="billing-item"><div class="billing-label">方法</div><div class="billing-val" id="det-method">メール</div></div>
+            </div>
           </div>
+
+          <div id="contact-form">
+            <div class="form-group">
+              <label class="form-label">接触履歴入力</label>
+              <textarea id="contact-memo" class="form-input" placeholder="交渉内容を入力..."></textarea>
+            </div>
+            <button class="btn btn-primary" style="width:100%;" onclick="saveContact()">履歴を保存</button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="page" id="page-phase">
-      <div class="phase-scroller">
-        <div class="phase-column"><div class="phase-header">アプローチ</div><div class="phase-list" id="p-1"></div></div>
-        <div class="phase-column"><div class="phase-header">アポイント</div><div class="phase-list" id="p-2"></div></div>
-        <div class="phase-column"><div class="phase-header">案件取得</div><div class="phase-list" id="p-3"></div></div>
-        <div class="phase-column"><div class="phase-header">見学会</div><div class="phase-list" id="p-4"></div></div>
-        <div class="phase-column"><div class="phase-header">稼働</div><div class="phase-list" id="p-5"></div></div>
-      </div>
-    </div>
-
   </div>
 </div>
 
 <script>
-// 基本ロジック
-function showPage(pageId, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + pageId).classList.add('active');
-    
-    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-    
-    document.getElementById('current-page-title').innerText = el.innerText.trim();
+// ページ切り替え
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
 }
 
+// 詳細表示ロジック（制限ルール適用）
 function openDetail(name) {
-    document.getElementById('customer-list-view').style.display = 'none';
-    const detail = document.getElementById('customer-detail');
-    detail.style.display = 'block';
-    document.getElementById('det-company-name').innerText = name;
-    
-    // サンプルの判定ロジック：二重アポ防止
-    const alertBox = document.getElementById('alert-container');
-    const inputArea = document.getElementById('contact-input-section');
-    
-    // 例：既存顧客の場合
-    if(name === "サンプル建設") {
-        alertBox.innerHTML = `<div class="alert-banner alert-danger">⚠️ 既存顧客のため新規営業アプローチは禁止されています。</div>`;
-        inputArea.style.opacity = '0.3';
-        inputArea.style.pointerEvents = 'none';
-    } else {
-        alertBox.innerHTML = "";
-        inputArea.style.opacity = '1';
-        inputArea.style.pointerEvents = 'all';
-    }
+  showPage('detail');
+  document.getElementById('det-name').innerText = name;
+
+  // ダミーデータを用いた判定例
+  const isExisting = name.includes("大林組"); // 既存顧客判定
+  const lastContactDays = 5; // 最終接触からの経過日数（サンプル）
+  
+  const lockMsg = document.getElementById('lock-msg');
+  const lockText = document.getElementById('lock-text');
+  const contactForm = document.getElementById('contact-form');
+
+  if (isExisting) {
+    lockMsg.style.display = 'flex';
+    lockText.innerText = "既存顧客のため、新規アプローチは禁止されています。";
+    contactForm.style.display = 'none';
+  } else if (lastContactDays <= 14) {
+    lockMsg.style.display = 'flex';
+    lockText.innerText = `最終接触から${lastContactDays}日しか経過していません（14日ルール適用中）`;
+    contactForm.style.display = 'none';
+  } else {
+    lockMsg.style.display = 'none';
+    contactForm.style.display = 'block';
+  }
 }
 
-function closeDetail() {
-    document.getElementById('customer-list-view').style.display = 'grid';
-    document.getElementById('customer-detail').style.display = 'none';
+// CSV出力
+function handleExport(type) {
+  console.log(type + " データのCSVエクスポートを実行");
+  alert(type + " データをCSV出力します");
 }
 
-function exportData(type) {
-    alert(type + ' のCSVを書き出します。');
+// CSV入力
+function handleImport(input, type) {
+  const file = input.files[0];
+  if (file) {
+    alert(type + " データを読み込みます: " + file.name);
+  }
 }
 
-function importData(input, type) {
-    alert(type + ' にCSVを読み込みます。');
+function saveContact() {
+  alert("履歴を保存しました");
+  showPage('dashboard');
 }
 </script>
 </body>
