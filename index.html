@@ -2,52 +2,60 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>NEXTsalesAI | 顧客・営業管理システム</title>
+    <title>NEXTsalesAI | 営業担当・顧客管理SFA</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Syne:wght@800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --sf-blue: #0176d3; --sf-bg: #f3f3f3; --sf-border: #dddbda;
-            --sidebar-dark: #001529; --text-main: #181818; --white: #ffffff;
+            --sf-blue: #0176d3; --sf-bg: #f4f6f8; --sf-border: #dddbda;
+            --sidebar: #001529; --text-main: #181818; --white: #ffffff;
             --success: #2e844a; --warning: #ff9d00; --danger: #ba0517;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Noto Sans JP', sans-serif; background: var(--sf-bg); display: flex; height: 100vh; overflow: hidden; }
 
-        /* --- SIDEBAR --- */
-        .sidebar { width: 260px; background: var(--sidebar-dark); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; }
+        /* --- SIDEBAR (完全復元版) --- */
+        .sidebar { width: 260px; background: var(--sidebar); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .nav-group { flex: 1; overflow-y: auto; padding: 20px 0; }
+        .nav-group { flex: 1; padding: 20px 0; overflow-y: auto; }
         .nav-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #ced4da; font-size: 14px; }
         .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
         .nav-item.active { background: var(--sf-blue); color: #fff; font-weight: 600; }
 
         .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.2); border-top: 2px solid var(--sf-blue); }
+        .csv-box { margin-bottom: 15px; }
         .csv-label { font-size: 10px; font-weight: 700; color: #8a949d; margin-bottom: 8px; display: block; }
-        .csv-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        .btn-csv { background: #1a2b3c; border: 1px solid #444; color: #fff; padding: 6px; font-size: 11px; border-radius: 4px; cursor: pointer; }
+        .csv-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-csv { background: #1a2b3c; border: 1px solid #444; color: #fff; padding: 6px; font-size: 11px; border-radius: 4px; cursor: pointer; transition: 0.2s; text-align: center; }
+        .btn-csv:hover { background: var(--sf-blue); }
 
-        /* --- MAIN --- */
-        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        /* --- MAIN LAYOUT --- */
+        .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         header { background: #fff; height: 60px; border-bottom: 1px solid var(--sf-border); display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
-        .container { flex: 1; overflow-y: auto; padding: 24px; }
+        .content { flex: 1; overflow-y: auto; padding: 24px; }
 
-        /* --- DASHBOARD --- */
-        .kpi-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
-        .kpi-card { background: #fff; border: 1px solid var(--sf-border); padding: 16px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-        .kpi-card:hover { transform: translateY(-3px); border-color: var(--sf-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        /* --- TOP KPI (数字が潰れない設計) --- */
+        .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
+        .kpi-card { background: #fff; border: 1px solid var(--sf-border); padding: 16px; border-radius: 4px; border-top: 4px solid var(--sf-blue); }
         .kpi-title { font-size: 11px; color: #666; font-weight: 700; margin-bottom: 8px; }
-        .kpi-val { font-size: 28px; font-weight: 800; font-family: 'Syne'; color: var(--sf-blue); }
+        .kpi-val { font-size: 26px; font-weight: 800; font-family: 'Syne'; color: var(--text-main); }
 
-        /* --- DAILY REPORT FORM --- */
-        .card { background: #fff; border: 1px solid var(--sf-border); border-radius: 4px; padding: 20px; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; color: var(--text-main); }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--sf-border); border-radius: 4px; }
-        .btn-submit { background: var(--sf-blue); color: #fff; border: none; padding: 12px 24px; border-radius: 4px; font-weight: 700; cursor: pointer; }
+        /* --- 営業担当別リスト数 (グリッド) --- */
+        .staff-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 24px; }
+        .staff-card { background: #fff; padding: 15px; border-radius: 4px; border: 1px solid var(--sf-border); cursor: pointer; transition: 0.2s; }
+        .staff-card:hover { border-color: var(--sf-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .staff-name { font-weight: 700; font-size: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .staff-stats { font-size: 12px; color: #666; display: flex; gap: 10px; }
+        .staff-count { color: var(--sf-blue); font-weight: 800; }
 
-        /* --- MODAL --- */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; }
-        .modal { background: #fff; width: 90%; max-width: 800px; border-radius: 8px; padding: 24px; position: relative; }
+        /* --- 14日以内アプローチ & 再架電リスト --- */
+        .card { background: #fff; border: 1px solid var(--sf-border); border-radius: 4px; padding: 20px; margin-bottom: 24px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; padding: 12px; background: #f8f9fa; color: #666; border-bottom: 2px solid var(--sf-border); }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        .badge-call { background: #fff1f0; color: var(--danger); padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; border: 1px solid var(--danger); }
+        .btn-action { padding: 4px 10px; font-size: 11px; background: var(--sf-blue); color: #fff; border: none; border-radius: 4px; cursor: pointer; }
 
         .hidden { display: none; }
     </style>
@@ -57,108 +65,107 @@
 <aside class="sidebar">
     <div class="sidebar-header">
         <div style="font-family:'Syne'; font-size:22px; font-weight:800;">NEXTsalesAI</div>
-        <div style="font-size:9px; color:#8a949d; margin-top:4px;">SALES ENABLEMENT TOOL</div>
+        <div style="font-size:9px; color:#8a949d; margin-top:4px;">SALES FORCE COMMAND</div>
     </div>
     <nav class="nav-group">
-        <div class="nav-item active" onclick="showPage('dash')">📊 ダッシュボード</div>
-        <div class="nav-item" onclick="showPage('customer')">🏢 顧客情報</div>
-        <div class="nav-item" onclick="showPage('report')">📝 営業日報作成</div>
-        <div class="nav-item" onclick="showPage('phase')">🎯 フェーズ進捗</div>
+        <div class="nav-item active">📊 ダッシュボード</div>
+        <div class="nav-item">🏢 顧客情報</div>
+        <div class="nav-item">📝 営業日報</div>
+        <div class="nav-item">🎯 フェーズ進捗</div>
+        <div class="nav-item">💴 請求・支払管理</div>
     </nav>
 
     <div class="sidebar-footer">
-        <span class="csv-label">📋 SFA全リスト (CSV)</span>
-        <div class="csv-btn-grid">
-            <button class="btn-csv" onclick="alert('Export')">エクスポート</button>
-            <label class="btn-csv">インポート<input type="file" hidden></label>
+        <div class="csv-box">
+            <span class="csv-label">📋 SFA全リスト (CSV)</span>
+            <div class="csv-btn-grid">
+                <button class="btn-csv" onclick="alert('Export All')">出力</button>
+                <label class="btn-csv">取込<input type="file" hidden></label>
+            </div>
         </div>
-        <span class="csv-label" style="color:var(--success)">💴 既存顧客データ (CSV)</span>
-        <div class="csv-btn-grid">
-            <button class="btn-csv" style="color:var(--success)">エクスポート</button>
-            <label class="btn-csv" style="color:var(--success)">インポート<input type="file" hidden></label>
+        <div class="csv-box">
+            <span class="csv-label" style="color:var(--success)">💴 既存顧客データ (CSV)</span>
+            <div class="csv-btn-grid">
+                <button class="btn-csv" style="color:var(--success)">出力</button>
+                <label class="btn-csv" style="color:var(--success)">取込<input type="file" hidden></label>
+            </div>
         </div>
     </div>
 </aside>
 
 <main class="main">
     <header>
-        <h2 id="page-title">ダッシュボード</h2>
-        <div style="font-size: 13px; color: #666;">管理者モード: 有効</div>
+        <h2 style="font-size: 18px;">営業統括ダッシュボード</h2>
+        <button class="btn-action" style="padding:8px 20px;">+ 新規案件登録</button>
     </header>
 
-    <div class="container">
-        <div id="page-dash">
-            <div class="kpi-grid">
-                <div class="kpi-card" onclick="alert('詳細を表示')"><div class="kpi-title">月間新規アポ</div><div class="kpi-val">24</div></div>
-                <div class="kpi-card"><div class="kpi-title">未経験案件</div><div class="kpi-val">08</div></div>
-                <div class="kpi-card"><div class="kpi-title">見学会実施</div><div class="kpi-val" style="color:var(--warning)">12</div></div>
-                <div class="kpi-card"><div class="kpi-title">決定(受注)</div><div class="kpi-val" style="color:var(--success)">06</div></div>
-                <div class="kpi-card"><div class="kpi-title">稼働開始</div><div class="kpi-val">04</div></div>
-                <div class="kpi-card"><div class="kpi-title" style="color:var(--danger)">14日未接触</div><div class="kpi-val" style="color:var(--danger)">18</div></div>
+    <div class="content">
+        <div class="kpi-row">
+            <div class="kpi-card"><div class="kpi-title">月間アポ</div><div class="kpi-val">24</div></div>
+            <div class="kpi-card"><div class="kpi-title">未経験獲得</div><div class="kpi-val">08</div></div>
+            <div class="kpi-card"><div class="kpi-title">見学会</div><div class="kpi-val" style="color:var(--warning)">12</div></div>
+            <div class="kpi-card"><div class="kpi-title">決定(受注)</div><div class="kpi-val" style="color:var(--success)">06</div></div>
+            <div class="kpi-card"><div class="kpi-title">稼働開始</div><div class="kpi-val">04</div></div>
+            <div class="kpi-card" style="border-top-color:var(--danger)"><div class="kpi-title" style="color:var(--danger)">14日未接触</div><div class="kpi-val" style="color:var(--danger)">18</div></div>
+        </div>
+
+        <div style="margin-bottom:10px; font-weight:700; font-size:14px; color:var(--text-main);">担当営業別状況</div>
+        <div class="staff-grid">
+            <div class="staff-card" onclick="filterByStaff('田中')">
+                <div class="staff-name">田中 太郎 <span>👤</span></div>
+                <div class="staff-stats">担当リスト: <span class="staff-count">142</span> | 警告: <span style="color:var(--danger)">5</span></div>
             </div>
-            
-            <div class="card">
-                <h3>最近の営業活動</h3>
-                <div id="recent-activities" style="margin-top:15px; font-size:13px;">
-                    <div style="padding:10px; border-bottom:1px solid #eee;">【03/23】田中：(株)〇〇建設へ見学会後のフォロー電話。好感触。</div>
-                    <div style="padding:10px; border-bottom:1px solid #eee;">【03/23】佐藤：△△開発へ新規アプローチ。来週アポ獲得。</div>
-                </div>
+            <div class="staff-card" onclick="filterByStaff('佐藤')">
+                <div class="staff-name">佐藤 次郎 <span>👤</span></div>
+                <div class="staff-stats">担当リスト: <span class="staff-count">98</span> | 警告: <span style="color:var(--danger)">3</span></div>
+            </div>
+            <div class="staff-card" onclick="filterByStaff('鈴木')">
+                <div class="staff-name">鈴木 三郎 <span>👤</span></div>
+                <div class="staff-stats">担当リスト: <span class="staff-count">115</span> | 警告: <span style="color:var(--danger)">8</span></div>
+            </div>
+            <div class="staff-card" onclick="filterByStaff('伊藤')">
+                <div class="staff-name">伊藤 四郎 <span>👤</span></div>
+                <div class="staff-stats">担当リスト: <span class="staff-count">84</span> | 警告: <span style="color:var(--danger)">2</span></div>
             </div>
         </div>
 
-        <div id="page-customer" class="hidden">
-            <div class="card">
-                <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                    <thead><tr style="background:#f8f9fa;"><th>顧客名</th><th>担当者</th><th>フェーズ</th><th>最終接触</th></tr></thead>
-                    <tbody>
-                        <tr style="border-bottom:1px solid #eee;"><td>(株)建設サンプル</td><td>山田 太郎</td><td>アポイント済</td><td>2026/03/15</td></tr>
-                        </tbody>
-                </table>
+        <div class="card">
+            <div class="card-header">
+                <div style="font-weight:700;">🚨 要フォローアップ企業（最終接触から14日以内 or 再架電設定）</div>
+                <div style="font-size:12px; color:#666;">担当者: <span id="current-filter">全員</span></div>
             </div>
-        </div>
-
-        <div id="page-report" class="hidden">
-            <div class="card">
-                <form id="dailyReportForm">
-                    <div class="form-group"><label>対象顧客</label><input type="text" placeholder="顧客名を入力"></div>
-                    <div class="form-group">
-                        <label>活動内容</label>
-                        <select>
-                            <option>新規訪問</option>
-                            <option>電話・メール</option>
-                            <option>見学会実施</option>
-                            <option>クロージング</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>詳細報告</label><textarea rows="5" placeholder="本日の活動詳細を記入してください"></textarea></div>
-                    <div class="form-group">
-                        <label>通知先設定</label>
-                        <input type="checkbox" checked> Slack/LINEへ送信（管理者へ通知）
-                    </div>
-                    <button type="button" class="btn-submit" onclick="submitReport()">日報を送信・保存</button>
-                </form>
-            </div>
+            <table id="followTable">
+                <thead>
+                    <tr><th>顧客名</th><th>担当者</th><th>フェーズ</th><th>最終接触日</th><th>再架電予定</th><th>アクション</th></tr>
+                </thead>
+                <tbody id="followBody">
+                    <tr>
+                        <td><strong>(株)青山建築</strong></td>
+                        <td>田中</td>
+                        <td>アポイント済</td>
+                        <td>2026/03/10</td>
+                        <td><span class="badge-call">明日 10:00</span></td>
+                        <td><button class="btn-action">日報作成</button></td>
+                    </tr>
+                    <tr>
+                        <td><strong>新宿土木 PJ</strong></td>
+                        <td>鈴木</td>
+                        <td>見学会設定</td>
+                        <td>2026/03/12</td>
+                        <td><span class="badge-call">本日 14:00</span></td>
+                        <td><button class="btn-action">日報作成</button></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </main>
 
 <script>
-    function showPage(pageId) {
-        document.getElementById('page-dash').classList.add('hidden');
-        document.getElementById('page-customer').classList.add('hidden');
-        document.getElementById('page-report').classList.add('hidden');
-        document.getElementById('page-' + pageId).classList.remove('hidden');
-        
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        
-        const titles = { dash: "ダッシュボード", customer: "顧客情報", report: "営業日報作成" };
-        document.getElementById('page-title').innerText = titles[pageId];
-    }
-
-    function submitReport() {
-        alert("日報を保存しました。\n【通知シミュレーション】: あなたのSlack/LINEへ送信されました。");
-        showPage('dash');
+    function filterByStaff(name) {
+        document.getElementById('current-filter').innerText = name;
+        alert(name + " さんの「14日以内アプローチ」および「再架電リスト」を抽出します。");
+        // 実装時はここでtableの内容をfilter
     }
 </script>
 </body>
