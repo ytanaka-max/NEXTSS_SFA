@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>SalesAI CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #f4f6f9;
+  --border: #e2e6ed;
+  --accent: #2563eb;
+  --accent2: #0891b2;
+  --accent3: #ea580c;
+  --text: #1a2332;
+  --text2: #4b5563;
+  --text3: #9ca3af;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --tanaka: #ea580c;
+  --inami: #7c3aed;
+  --onoe: #0369a1;
+  --nav-h: 60px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+
+/* ── TOPBAR (mobile) ── */
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; flex-shrink: 0; z-index: 50; box-shadow: var(--shadow); }
+.topbar-logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--accent); }
+.topbar-sub { font-size: 9px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; }
+.topbar-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 13px; font-size: 12px; font-family: 'Noto Sans JP', sans-serif; font-weight: 600; cursor: pointer; }
+
+/* ── CONTENT / NAV ── */
+.content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--nav-h) + 8px); }
+.bottom-nav { height: var(--nav-h); background: var(--surface); border-top: 1px solid var(--border); display: flex; flex-shrink: 0; z-index: 50; }
+.nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; color: var(--text3); transition: color 0.15s; padding: 8px 4px; }
+.nav-tab.active { color: var(--accent); }
+.nav-tab-icon { font-size: 20px; line-height: 1; }
+.nav-tab-label { font-size: 10px; font-weight: 600; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── BUTTONS ── */
+.btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-family: 'Noto Sans JP', sans-serif; font-weight: 500; transition: all 0.15s; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+.btn-danger:hover { background: #fee2e2; }
+.btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 6px; }
+.btn-xs { padding: 3px 8px; font-size: 10px; border-radius: 5px; }
+
+/* ── CARDS ── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); }
+.card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); margin-bottom: 12px; }
+
+/* ── KPI ── */
+.kpi-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 14px 14px 4px; scrollbar-width: none; }
+.kpi-scroll::-webkit-scrollbar { display: none; }
+.kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; min-width: 130px; position: relative; overflow: hidden; flex-shrink: 0; box-shadow: var(--shadow); cursor: pointer; transition: border-color 0.15s; }
+.kpi-card:hover { border-color: var(--accent); }
+.kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.kpi-card.blue::before { background: var(--accent); }
+.kpi-card.green::before { background: var(--success); }
+.kpi-card.orange::before { background: var(--accent3); }
+.kpi-card.amber::before { background: var(--warning); }
+.kpi-label { font-size: 10px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+.kpi-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; line-height: 1; }
+.kpi-sub { font-size: 9px; color: var(--text3); margin-top: 4px; }
+
+/* ── QUOTA ── */
+.quota-row { display: flex; gap: 8px; overflow-x: auto; padding: 0 14px 14px; scrollbar-width: none; }
+.quota-row::-webkit-scrollbar { display: none; }
+.quota-mini { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; min-width: 140px; flex-shrink: 0; cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow); }
+.quota-mini:hover { border-color: var(--accent); }
+.quota-mini.over { border-color: var(--danger) !important; background: #fef2f2; }
+.quota-mini.near { border-color: var(--warning) !important; background: #fffbeb; }
+.quota-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+.quota-name { font-size: 12px; font-weight: 700; }
+.quota-num { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; }
+.quota-bar-bg { height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.quota-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+.quota-warn { font-size: 9px; color: var(--warning); margin-top: 4px; font-weight: 600; }
+.quota-hint { font-size: 9px; color: var(--text3); margin-top: 3px; }
+
+/* ── MINI BAR CHARTS ── */
+.mini-bar-wrap { display: flex; flex-direction: column; gap: 8px; }
+.mini-bar-row { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 3px 6px; border-radius: 6px; transition: background 0.12s; }
+.mini-bar-row:hover { background: #eff6ff; }
+.mini-bar-label { font-size: 11px; color: var(--text2); width: 40px; flex-shrink: 0; text-align: right; white-space: nowrap; }
+.mini-bar-bg { flex: 1; height: 7px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.mini-bar-fill { height: 100%; border-radius: 4px; }
+.mini-bar-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2); width: 24px; text-align: right; }
+
+/* ── GRID 2 ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 14px 14px; }
+@media(max-width:500px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* ── ACTIVITY ── */
+.activity-list { display: flex; flex-direction: column; }
+.activity-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.activity-item:last-child { border-bottom: none; }
+.act-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.act-text { font-size: 12px; line-height: 1.5; color: var(--text2); flex: 1; }
+.act-time { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* ── FILTER CHIPS ── */
+.filter-bar { display: flex; gap: 8px; overflow-x: auto; padding: 0 14px 8px; scrollbar-width: none; }
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-chip { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1.5px solid var(--border); background: var(--surface); color: var(--text2); cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
+.filter-chip.active { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+.filter-chip:hover { border-color: var(--accent); }
+
+/* ── SEARCH ── */
+.search-wrap { padding: 0 14px 8px; }
+.search-input { width: 100%; padding: 9px 14px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-size: 13px; font-family: 'Noto Sans JP', sans-serif; outline: none; }
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text3); }
+
+/* ── CUSTOMER CARDS ── */
+.section-pad { padding: 14px; }
+.company-group-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px 6px; cursor: pointer; }
+.company-group-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.company-group-count { font-size: 10px; color: var(--text3); background: var(--surface2); padding: 1px 7px; border-radius: 10px; border: 1px solid var(--border); }
+.company-group-toggle { font-size: 12px; color: var(--text3); transition: transform 0.2s; }
+.company-group-toggle.open { transform: rotate(180deg); }
+.cust-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin: 0 14px 8px; box-shadow: var(--shadow); transition: all 0.15s; }
+.cust-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+.cust-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.cust-info { flex: 1; min-width: 0; }
+.cust-company { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cust-keyname { font-size: 12px; color: var(--text2); }
+.cust-industry-tag { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.cust-bottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+.cust-email { color: var(--accent); text-decoration: none; font-size: 12px; }
+.cust-email:hover { text-decoration: underline; }
+.status-select { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 8px; color: var(--text); font-size: 11px; font-family: 'Noto Sans JP', sans-serif; font-weight: 600; padding: 4px 8px; outline: none; cursor: pointer; }
+.status-select:focus { border-color: var(--accent); }
+
+/* ── BADGE ── */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.badge-既存顧客 { background: #d1fae5; color: #065f46; }
+.badge-未顧客 { background: #dbeafe; color: #1e40af; }
+.badge-田中追い { background: #ffedd5; color: #9a3412; }
+.badge-伊波追い { background: #ede9fe; color: #5b21b6; }
+.badge-尾上追い { background: #e0f2fe; color: #075985; }
+.badge-建築 { background: #dbeafe; color: #1e40af; }
+.badge-設備 { background: #d1fae5; color: #065f46; }
+.badge-電気 { background: #ffedd5; color: #9a3412; }
+.badge-土木 { background: #fef3c7; color: #92400e; }
+.badge-空調 { background: #e0f2fe; color: #075985; }
+.badge-計装 { background: #ede9fe; color: #5b21b6; }
+.badge-プラント { background: #fce7f3; color: #9d174d; }
+.badge-その他 { background: #f3f4f6; color: #6b7280; }
+
+/* ── PIPELINE ── */
+.pipeline-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 14px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.pipeline-col { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; min-width: 200px; flex-shrink: 0; box-shadow: var(--shadow); }
+.pipeline-col-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid; }
+.pipeline-col-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.pipeline-count { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); background: var(--surface2); padding: 1px 7px; border-radius: 10px; border: 1px solid var(--border); }
+.deal-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
+.deal-card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-1px); }
+.deal-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.deal-company { font-size: 10px; color: var(--text3); margin-bottom: 6px; }
+.deal-amount { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent2); }
+.prob-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 6px; }
+.prob-fill { height: 100%; border-radius: 2px; }
+
+/* ── AI PANEL ── */
+.ai-panel { background: linear-gradient(135deg,#eff6ff,#f0fdfa); border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+.ai-badge { display: inline-flex; align-items: center; gap: 6px; background: #dbeafe; border: 1px solid #93c5fd; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; color: #1d4ed8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.ai-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+.insight-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.insight-btn { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 13px 14px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); transition: all 0.15s; }
+.insight-btn:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+.insight-icon { font-size: 22px; }
+.insight-label { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+.insight-desc { font-size: 11px; color: var(--text2); }
+.ai-result-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-size: 13px; color: var(--text); line-height: 1.8; white-space: pre-wrap; margin-top: 12px; }
+
+/* ── FORMS ── */
+.form-group { margin-bottom: 12px; }
+.form-label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); margin-bottom: 5px; }
+.form-input, .form-select { width: 100%; padding: 9px 12px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; }
+.form-input:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #dbeafe; }
+textarea.form-input { resize: vertical; min-height: 80px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media(max-width:480px) { .form-row { grid-template-columns: 1fr; } }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 300; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 20px 20px 32px; width: 100%; max-width: 640px; max-height: 92vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.2s; box-shadow: 0 -4px 30px rgba(0,0,0,0.1); }
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.modal-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800; color: var(--text); }
+.modal-close { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text3); cursor: pointer; font-size: 14px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { background: #fee2e2; color: var(--danger); }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.limit-warn { font-size: 10px; color: var(--danger); display: block; margin-top: 4px; font-weight: 600; }
+
+/* ── MISC ── */
+.spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); padding: 10px 0; }
+.summary-output { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 13px; line-height: 1.8; white-space: pre-wrap; color: var(--text); }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 13px; }
+.empty-state .e-icon { font-size: 36px; margin-bottom: 10px; }
+
+/* ── REPORT ── */
+.rpt-stat-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; text-align: center; min-width: 70px; }
+.rpt-stat-num { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; line-height: 1; }
+.rpt-stat-label { font-size: 10px; color: var(--text3); margin-top: 3px; }
+.rpt-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.rpt-tbl th { padding: 8px 10px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); border-bottom: 2px solid var(--border); background: var(--surface2); white-space: nowrap; }
+.rpt-tbl td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: middle; }
+.rpt-tbl tr:hover td { background: #eff6ff; cursor: pointer; }
+.rpt-tbl tr:last-child td { border-bottom: none; }
+.over-badge { background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; color: var(--danger); display: inline-block; }
+.near-badge { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; color: var(--warning); display: inline-block; }
+.ok-badge { background: #d1fae5; border: 1px solid #6ee7b7; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; color: var(--success); display: inline-block; }
+.chaser-remove-btn { background: #fef2f2; border: 1px solid #fecaca; border-radius: 5px; color: var(--danger); font-size: 11px; font-weight: 600; padding: 3px 9px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
+.chaser-remove-btn:hover { background: #fee2e2; }
+
+/* ── COMPANY DETAIL PAGE HEIGHT ── */
+#page-companyDetail { display:flex !important; flex-direction:column; height:100%; }
+#page-companyDetail.active { display:flex !important; }
+#cd-body { flex:1; overflow-y:auto; }
+.approach-ok  { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; border-radius:8px; padding:4px 12px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
+.approach-ng  { background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; border-radius:8px; padding:4px 12px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
+.approach-none{ background:#f3f4f6; color:#6b7280; border:1px solid #d1d5db; border-radius:8px; padding:4px 12px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
+
+/* ── CONTACT HISTORY ── */
+.contact-timeline { display:flex; flex-direction:column; gap:0; }
+.contact-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); position:relative; }
+.contact-item:last-child { border-bottom:none; }
+.contact-dot-wrap { display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:28px; }
+.contact-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+.contact-body { flex:1; min-width:0; }
+.contact-date { font-size:11px; color:var(--text3); margin-bottom:2px; display:flex; align-items:center; gap:6px; }
+.contact-days { font-size:10px; font-weight:600; padding:1px 6px; border-radius:10px; }
+.contact-days.recent { background:#fef2f2; color:#dc2626; }
+.contact-days.ok     { background:#d1fae5; color:#065f46; }
+.contact-keyname { font-size:11px; font-weight:600; color:var(--accent); margin-bottom:3px; }
+.contact-text { font-size:12px; color:var(--text); line-height:1.5; }
+.contact-del { background:none; border:none; color:var(--text3); cursor:pointer; font-size:12px; padding:2px 4px; flex-shrink:0; }
+.contact-del:hover { color:var(--danger); }
+
+/* ── CONTACT ADD FORM ── */
+.contact-add-box { background:var(--surface2); border:1.5px solid var(--border); border-radius:12px; padding:14px; margin-bottom:16px; }
+.contact-add-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+@media(max-width:480px) { .contact-add-row { grid-template-columns:1fr; } }
+
+/* ── DETAIL SECTIONS ── */
+.detail-section { margin-bottom:20px; }
+.detail-section-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text3); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.info-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+@media(min-width:600px) { .info-grid { grid-template-columns:repeat(3,1fr); } }
+.info-chip { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:9px 12px; }
+.info-chip-label { font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
+.info-chip-val { font-size:12px; color:var(--text); font-weight:500; word-break:break-all; }
+.billing-mini { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 14px; }
+.billing-mini-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #d1fae5; font-size:12px; gap:12px; }
+.billing-mini-row:last-child { border-bottom:none; }
+.billing-mini-label { color:#6b7280; flex-shrink:0; font-weight:500; }
+.billing-mini-val { color:var(--text); font-weight:500; text-align:right; }
+
+/* ── APPROACH STATUS IN LIST ── */
+.cust-approach-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; display:inline-block; margin-right:5px; }
+
+@media(min-width: 768px) {
+  body { flex-direction: row; }
+  .sidebar-desktop { width: 215px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; position: sticky; top: 0; box-shadow: 2px 0 8px rgba(0,0,0,0.04); }
+  .sidebar-logo { padding: 22px 18px 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--accent); }
+  .sidebar-logo-sub { font-size: 9px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .sidebar-nav { padding: 10px 0; flex: 1; }
+  .sidebar-section { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); padding: 12px 16px 4px; }
+  .sidebar-item { display: flex; align-items: center; gap: 9px; padding: 10px 18px; cursor: pointer; color: var(--text2); font-size: 13px; border-left: 3px solid transparent; transition: all 0.15s; }
+  .sidebar-item:hover { color: var(--text); background: #f8faff; }
+  .sidebar-item.active { color: var(--accent); border-left-color: var(--accent); background: #eff6ff; font-weight: 600; }
+  .sidebar-item-icon { width: 18px; text-align: center; font-size: 15px; }
+  .sidebar-footer { padding: 14px 16px; border-top: 1px solid var(--border); }
+  .mobile-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { position: sticky; top: 0; }
+  .content { flex: 1; padding-bottom: 0; }
+  .bottom-nav { display: none; }
+  .kpi-scroll { flex-wrap: wrap; overflow: visible; padding: 16px 16px 4px; }
+  .kpi-card { min-width: 0; flex: 1 1 calc(25% - 8px); }
+  .quota-row { flex-wrap: wrap; overflow: visible; padding: 0 16px 16px; }
+  .quota-mini { flex: 1 1 calc(33% - 6px); min-width: 150px; }
+  .filter-bar { flex-wrap: wrap; overflow: visible; padding: 0 16px 8px; }
+  .search-wrap { padding: 0 16px 8px; }
+  .cust-card { margin: 0 16px 8px; }
+  .pipeline-scroll { padding: 16px; }
+  .section-pad { padding: 16px; }
+  .grid-2 { padding: 0 16px 16px; }
+  .modal { border-radius: 14px; margin: auto; }
+  .modal-overlay { align-items: center; }
+  .modal-handle { display: none; }
+  .fab { display: none; }
+}
+@media(max-width: 767px) {
+  .sidebar-desktop { display: none; }
+  .mobile-main { flex: 1; }
+  .topbar-btn { font-size: 11px; padding: 6px 10px; }
+  .fab { position: fixed; bottom: calc(var(--nav-h) + 12px); right: 16px; width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(37,99,235,0.35); display: flex; align-items: center; justify-content: center; z-index: 40; }
+}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--surface2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+</style>
+</head>
+<body>
+
+<!-- DESKTOP SIDEBAR -->
+<div class="sidebar-desktop">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-title">SalesAI</div>
+    <div class="sidebar-logo-sub">建設業向け CRM</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section">メイン</div>
+    <div class="sidebar-item active" id="si-dashboard" onclick="showPage('dashboard',this)"><span class="sidebar-item-icon">📊</span>ダッシュボード</div>
+    <div class="sidebar-item" id="si-customers" onclick="showPage('customers',this)"><span class="sidebar-item-icon">🏢</span>企業管理</div>
+    <div class="sidebar-item" id="si-pipeline" onclick="showPage('pipeline',this)"><span class="sidebar-item-icon">🎯</span>フェーズ管理</div>
+    <div class="sidebar-section">AI機能</div>
+    <div class="sidebar-item" id="si-insights" onclick="showPage('insights',this)"><span class="sidebar-item-icon">✨</span>AIインサイト</div>
+    <div class="sidebar-item" id="si-summary" onclick="showPage('summary',this)"><span class="sidebar-item-icon">📝</span>商談要約</div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="btn btn-primary" style="width:100%;font-size:12px;" onclick="openModal('addCustomer')">＋ 企業追加</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="mobile-main">
+<div class="topbar">
+  <div><div class="topbar-logo">SalesAI</div><div style="font-size:9px;color:var(--text3);letter-spacing:1px;">建設業向け CRM</div></div>
+  <button class="topbar-btn" onclick="openModal('addCustomer')">＋ 企業追加</button>
+</div>
+
+<div class="content">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="kpi-scroll">
+    <div class="kpi-card blue" onclick="openReport('total')"><div class="kpi-label">総企業数</div><div class="kpi-value" id="kpi-total" style="color:var(--accent)">0</div><div class="kpi-sub">クリックで一覧</div></div>
+    <div class="kpi-card green" onclick="openReport('existing')"><div class="kpi-label">既存顧客</div><div class="kpi-value" id="kpi-existing" style="color:var(--success)">0</div><div class="kpi-sub">クリックで一覧</div></div>
+    <div class="kpi-card orange" onclick="openReport('phase')"><div class="kpi-label">フェーズ管理</div><div class="kpi-value" id="kpi-phase" style="color:var(--accent3)">0</div><div class="kpi-sub">クリックで一覧</div></div>
+    <div class="kpi-card amber" onclick="openReport('chasing')"><div class="kpi-label">追客合計</div><div class="kpi-value" id="kpi-chasing" style="color:var(--warning)">0</div><div class="kpi-sub">クリックで一覧</div></div>
+  </div>
+  <div class="quota-row" id="quotaRow"></div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">業種別企業数</div><div class="mini-bar-wrap" id="industryChart"></div></div>
+    <div class="card"><div class="card-title">担当者別追客状況</div><div class="mini-bar-wrap" id="chaseChart"></div></div>
+  </div>
+  <div style="padding:0 14px 14px;">
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">フェーズ別案件数 <span style="font-size:10px;color:var(--text3);font-weight:400;">（クリックで詳細）</span></div>
+      <div id="phaseSummaryBars" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="page" id="page-customers">
+  <div class="search-wrap" style="padding-top:14px;"><input class="search-input" type="search" placeholder="🔍 企業名・キーマン名で検索..." oninput="filterQ(this.value)"></div>
+  <div class="filter-bar" id="statusChips"></div>
+  <div class="filter-bar" id="industryChips"></div>
+  <div style="padding:0 14px 8px;display:flex;gap:8px;align-items:center;">
+    <select class="form-select" id="chaserFilter" onchange="setChaserF(this.value)" style="flex:1;font-size:12px;padding:7px 10px;">
+      <option value="">👤 担当者で絞り込む（全員）</option>
+      <option value="田中">田中</option><option value="伊波">伊波</option><option value="尾上">尾上</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('chaserFilter').value='';setChaserF('')">解除</button>
+  </div>
+  <div style="padding:0 14px 8px;display:flex;align-items:center;justify-content:space-between;">
+    <span id="coCount" style="font-size:12px;color:var(--text3);"></span>
+  </div>
+  <div id="customerList"></div>
+</div>
+
+<!-- COMPANY DETAIL (sub-page, shown over customers) -->
+<div class="page" id="page-companyDetail">
+  <div id="cd-header" style="background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;box-shadow:var(--shadow);position:sticky;top:0;z-index:10;">
+    <button class="btn btn-ghost btn-sm" onclick="showPage('customers',document.getElementById('tab-customers'))">← 一覧へ</button>
+    <div style="flex:1;min-width:0;">
+      <div id="cd-name" style="font-size:16px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+      <div id="cd-meta" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+    </div>
+    <div id="cd-approach-badge"></div>
+  </div>
+  <div id="cd-body" style="overflow-y:auto;"></div>
+</div>
+
+<!-- PIPELINE / PHASE -->
+<div class="page" id="page-pipeline">
+  <div style="padding:14px 14px 0;">
+    <div class="ai-panel">
+      <div class="ai-badge"><div class="ai-dot"></div> AI アシスタント</div>
+      <p style="font-size:12px;color:var(--text2);">案件カードをクリックするとAI要約を生成します。</p>
+    </div>
+  </div>
+  <div style="padding:8px 14px;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:13px;font-weight:700;color:var(--text);">フェーズ管理</span>
+    <button class="btn btn-primary btn-sm" onclick="openModal('addDeal')">＋ 案件追加</button>
+  </div>
+  <div class="pipeline-scroll" id="pipelineBoard"></div>
+</div>
+
+<!-- AI INSIGHTS -->
+<div class="page" id="page-insights">
+  <div class="section-pad">
+    <div class="ai-panel">
+      <div class="ai-badge"><div class="ai-dot"></div> AI インサイト</div>
+      <p style="font-size:12px;color:var(--text2);">パイプライン全体を自動分析します。</p>
+    </div>
+    <div class="insight-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <div class="insight-btn" onclick="runAnalysis('risk')"><span class="insight-icon">⚠️</span><div><div class="insight-label">リスク検知</div><div class="insight-desc">停滞案件・フォロー漏れを自動検知</div></div></div>
+      <div class="insight-btn" onclick="runAnalysis('opportunity')"><span class="insight-icon">🚀</span><div><div class="insight-label">チャンス発見</div><div class="insight-desc">クロスセル・アップセルの機会を特定</div></div></div>
+      <div class="insight-btn" onclick="runAnalysis('forecast')"><span class="insight-icon">📊</span><div><div class="insight-label">フェーズ予測</div><div class="insight-desc">案件進捗と成約見込みを予測</div></div></div>
+    </div>
+    <div id="insightResult" style="display:none;margin-top:14px;" class="card">
+      <div class="card-title" id="insightTitle"></div>
+      <div id="insightContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="page" id="page-summary">
+  <div class="section-pad" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+    <div class="card">
+      <div class="card-title">商談要約を自動生成</div>
+      <div class="form-group"><label class="form-label">顧客名 / 企業名</label><input class="form-input" id="sumCust" placeholder="山田 太郎 / 山田建設"></div>
+      <div class="form-group"><label class="form-label">商談メモ</label><textarea class="form-input" id="sumNotes" rows="8" placeholder="商談内容、課題、提案内容などを入力..."></textarea></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="genSummary()">✨ AIで要約を生成</button>
+    </div>
+    <div>
+      <div id="sumResult" style="display:none;">
+        <div class="ai-panel">
+          <div class="ai-badge"><div class="ai-dot"></div> AI 生成要約</div>
+          <div id="sumOutput" class="summary-output" style="margin-top:10px;max-height:360px;overflow-y:auto;"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn btn-primary btn-sm" onclick="copySummary()">📋 コピー</button>
+            <button class="btn btn-ghost btn-sm" onclick="saveSummary()">💾 保存</button>
+          </div>
+        </div>
+      </div>
+      <div id="savedSummaries"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<nav class="bottom-nav">
+  <div class="nav-tab active" id="tab-dashboard" onclick="showPage('dashboard',this)"><div class="nav-tab-icon">📊</div><div class="nav-tab-label">ホーム</div></div>
+  <div class="nav-tab" id="tab-customers" onclick="showPage('customers',this)"><div class="nav-tab-icon">🏢</div><div class="nav-tab-label">企業</div></div>
+  <div class="nav-tab" id="tab-pipeline" onclick="showPage('pipeline',this)"><div class="nav-tab-icon">🎯</div><div class="nav-tab-label">フェーズ</div></div>
+  <div class="nav-tab" id="tab-insights" onclick="showPage('insights',this)"><div class="nav-tab-icon">✨</div><div class="nav-tab-label">AI</div></div>
+  <div class="nav-tab" id="tab-summary" onclick="showPage('summary',this)"><div class="nav-tab-icon">📝</div><div class="nav-tab-label">要約</div></div>
+</nav>
+</div><!-- /mobile-main -->
+
+<button class="fab" onclick="openModal('addCustomer')">＋</button>
+
+<!-- MODAL: Add Customer -->
+<div class="modal-overlay" id="modal-addCustomer" onclick="if(event.target===this)closeModal('addCustomer')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header"><div class="modal-title">企業を追加</div><button class="modal-close" onclick="closeModal('addCustomer')">✕</button></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">企業名 *</label><input class="form-input" id="c-company" placeholder="株式会社〇〇建設"></div>
+      <div class="form-group"><label class="form-label">支店名</label><input class="form-input" id="c-branch" placeholder="東京支店"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">業種</label>
+        <select class="form-select" id="c-industry"><option value="">選択</option><option>建築</option><option>設備</option><option>電気</option><option>土木</option><option>空調</option><option>計装</option><option>プラント</option><option>その他</option></select></div>
+      <div class="form-group"><label class="form-label">ステータス</label>
+        <select class="form-select" id="c-status" onchange="chkLimit(this)">
+          <option value="未顧客">未顧客</option><option value="既存顧客">既存顧客</option>
+          <option value="田中追い">田中追い</option><option value="伊波追い">伊波追い</option><option value="尾上追い">尾上追い</option>
+        </select>
+        <span id="limitWarn" class="limit-warn" style="display:none;"></span></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">電話番号</label><input class="form-input" id="c-phone" inputmode="tel" placeholder="03-0000-0000"></div>
+      <div class="form-group"><label class="form-label">キーマン名</label><input class="form-input" id="c-name" placeholder="山田 部長"></div>
+    </div>
+    <div class="form-group"><label class="form-label">URL</label><input class="form-input" id="c-url" type="url" placeholder="https://example.com"></div>
+    <div class="form-group"><label class="form-label">メモ・備考</label><textarea class="form-input" id="c-memo" rows="3" placeholder="商談メモ・備考など"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addCustomer')">キャンセル</button>
+      <button class="btn btn-primary" onclick="addCustomer()">追加する</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add Deal -->
+<div class="modal-overlay" id="modal-addDeal" onclick="if(event.target===this)closeModal('addDeal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header"><div class="modal-title">案件をフェーズに追加</div><button class="modal-close" onclick="closeModal('addDeal')">✕</button></div>
+    <div class="form-group"><label class="form-label">案件名 *</label><input class="form-input" id="d-name" placeholder="〇〇建設 現場スタッフ紹介"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">企業名</label><input class="form-input" id="d-company" placeholder="株式会社〇〇"></div>
+      <div class="form-group"><label class="form-label">担当者名</label><input class="form-input" id="d-customer" placeholder="山田 太郎"></div>
+    </div>
+    <div class="form-group"><label class="form-label">フェーズ</label>
+      <select class="form-select" id="d-stage">
+        <option>アポ訪問</option><option>未経験案件獲得</option><option>人選中</option><option>人材紹介</option>
+        <option>見学会日程調整中</option><option>見学会日程決定</option><option>見学会実施</option><option>結果待ち</option><option>初日同行</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">メモ</label><input class="form-input" id="d-memo" placeholder="備考・詳細"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addDeal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="addDeal()">追加する</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Deal Summary -->
+<div class="modal-overlay" id="modal-dealSummary" onclick="if(event.target===this)closeModal('dealSummary')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title" id="ds-title">案件名</div><div style="font-size:11px;color:var(--text3);margin-top:2px;" id="ds-sub"></div></div>
+      <button class="modal-close" onclick="closeModal('dealSummary')">✕</button>
+    </div>
+    <div id="ds-stage-badge" style="margin-bottom:14px;"></div>
+    <div class="form-group"><label class="form-label">フェーズを変更</label><select class="form-select" id="ds-phase-sel" onchange="updateDealPhase()">
+      <option>アポ訪問</option><option>未経験案件獲得</option><option>人選中</option><option>人材紹介</option>
+      <option>見学会日程調整中</option><option>見学会日程決定</option><option>見学会実施</option><option>結果待ち</option><option>初日同行</option>
+    </select></div>
+    <div class="ai-badge" style="margin-bottom:10px;"><div class="ai-dot"></div> AI 商談要約（Claude）</div>
+    <div id="ds-loading" class="loading-row"><div class="spinner"></div>AIが分析中...</div>
+    <div id="ds-result" class="ai-result-box" style="display:none;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="deleteDeal()">削除</button>
+      <button class="btn btn-ghost" onclick="closeModal('dealSummary')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Report -->
+<div class="modal-overlay" id="modal-report" onclick="if(event.target===this)closeModal('report')">
+  <div class="modal" style="max-width:780px;">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title" id="rpt-title">レポート</div><div style="font-size:12px;color:var(--text3);margin-top:2px;" id="rpt-subtitle"></div></div>
+      <button class="modal-close" onclick="closeModal('report')">✕</button>
+    </div>
+    <div id="rpt-stats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);"></div>
+    <div id="rpt-actions" style="margin-bottom:10px;"></div>
+    <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;max-height:460px;overflow-y:auto;" id="rpt-table"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('report')">閉じる</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Chaser Report -->
+<div class="modal-overlay" id="modal-chaserReport" onclick="if(event.target===this)closeModal('chaserReport')">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div><div class="modal-title" id="cr-title">担当者レポート</div><div style="font-size:12px;color:var(--text3);margin-top:2px;" id="cr-subtitle"></div></div>
+      <button class="modal-close" onclick="closeModal('chaserReport')">✕</button>
+    </div>
+    <div id="cr-stats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:600;color:var(--text2);align-self:center;">一括：</span>
+      <button class="btn btn-sm btn-ghost" onclick="chaserMoveAll('未顧客')">未顧客へ</button>
+      <button class="btn btn-sm" style="background:#ffedd5;color:#9a3412;border:1px solid#fdba74;" onclick="chaserMoveAll('田中追い')">→田中</button>
+      <button class="btn btn-sm" style="background:#ede9fe;color:#5b21b6;border:1px solid#c4b5fd;" onclick="chaserMoveAll('伊波追い')">→伊波</button>
+      <button class="btn btn-sm" style="background:#e0f2fe;color:#075985;border:1px solid#7dd3fc;" onclick="chaserMoveAll('尾上追い')">→尾上</button>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;max-height:420px;overflow-y:auto;" id="cr-list"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('chaserReport')">閉じる</button></div>
+  </div>
+</div>
+
+<script>
+// ════ CONSTANTS ════
+const LIMIT = 15;
+const CHASE = ['田中追い','伊波追い','尾上追い'];
+const MEMBER_CFG = [
+  {name:'田中', status:'田中追い', color:'var(--tanaka)'},
+  {name:'伊波', status:'伊波追い', color:'var(--inami)'},
+  {name:'尾上', status:'尾上追い', color:'var(--onoe)'},
+];
+const STATUS_COLOR = {'既存顧客':'var(--success)','未顧客':'var(--accent)','田中追い':'var(--tanaka)','伊波追い':'var(--inami)','尾上追い':'var(--onoe)'};
+const STAGE_COLORS = {
+  'アポ訪問':'#6b7494','未経験案件獲得':'#2563eb','人選中':'#7c3aed','人材紹介':'#ea580c',
+  '見学会日程調整中':'#d97706','見学会日程決定':'#f59e0b','見学会実施':'#0891b2','結果待ち':'#9333ea','初日同行':'#059669'
+};
+const AV_COLORS = ['#2563eb','#059669','#ea580c','#7c3aed','#d97706','#dc2626','#0891b2','#84cc16','#06b6d4'];
+const PAGE_TITLES = {dashboard:'ダッシュボード',customers:'企業管理',pipeline:'フェーズ管理',insights:'AIインサイト',summary:'商談要約'};
+const ACT_BG = {'📞':'#dbeafe','📧':'#d1fae5','🤝':'#ffedd5','📄':'#ede9fe','💬':'#fef3c7','✅':'#d1fae5','📝':'#f3f4f6'};
+
+const EXISTING_DATA = {
+  '櫻井工業':{closeDay:'10日',earlyClose:'有り',payDay:'翌月15日',sendTo:'本社',sendMethod:'メール',email:'tokyo-keihi@skk-gr.co.jp',emailTo:'管理課 課長 早川 智比庫',note:'10日で早締め'},
+  '三機工業':{closeDay:'末日',payDay:'翌翌10日',sendTo:'本社',sendMethod:'メール',email:'btob_10gyoumu@eng.sanki.co.jp',emailTo:'業務部着',note:'先方指定勤務カード有り(ハーモス)'},
+  '東京三田組':{closeDay:'末日',earlyClose:'有り',payDay:'翌月15日',sendTo:'本社',sendMethod:'原本送付',address:'〒121-0056 東京都足立区北加平町21-2 花畑川環境整備その1散策路工事',emailTo:'飯塚 照明所長宛',note:'末で早締め'},
+  'アネス':{closeDay:'末日',earlyClose:'有り',payDay:'翌末',sendTo:'本社',sendMethod:'原本送付',address:'〒114-0005 東京都北区栄町1-3 アネス株式会社 第三事業部 川原 泰治',note:'先方指定勤務カード有り'},
+  '大成温調':{closeDay:'10日',earlyClose:'有り',payDay:'翌末',sendTo:'現場毎',sendMethod:'メール',email:'r-ushiyama@taisei-oncho.co.jp',emailTo:'各所長+CC牛山さん'},
+  '奥村組':{closeDay:'末日',earlyClose:'有り',payDay:'翌々15日',sendTo:'現場毎',sendMethod:'原本送付'},
+  '日本電技':{closeDay:'末日',payDay:'翌25日',sendMethod:'メール',email:'seikyu-jigyouhonbu@nihondengi.co.jp'},
+  'テクノ菱和':{closeDay:'20日',earlyClose:'有り',payDay:'翌20日',sendTo:'管轄支店',sendMethod:'原本送付'},
+  'オイレスECO':{closeDay:'25日',payDay:'翌末',sendTo:'本社',sendMethod:'原本送付・メール',email:'iga@oiles-eco.co.jp / nat.sutama@oiles-eco.co.jp',emailTo:'to:伊賀さん cc:須玉さん'},
+  'テイエム技建':{closeDay:'15日',earlyClose:'有り',payDay:'翌20日',sendTo:'本社',sendMethod:'原本送付・メール',email:'tokyo-kouji@tm-g.co.jp',note:'原本は大阪、メールは東京へ'},
+  'ＣＶＣ':{closeDay:'末日',payDay:'翌々15日',sendTo:'本社',sendMethod:'原本送付'},
+  '大和リース':{closeDay:'20日',payDay:'翌15日',sendMethod:'e-staffing'},
+  '太平電業':{closeDay:'末日',payDay:'翌2営業日',sendMethod:'メール・原本送付',address:'〒230-0034 神奈川県横浜市鶴見区鶴見中央3-4-39 太平電業京浜ビル 2F'},
+  '東急建設':{closeDay:'末日',earlyClose:'有り',payDay:'翌々10日',sendMethod:'原本送付'},
+  '中電工':{closeDay:'末日',payDay:'翌月末',sendMethod:'メール',email:'tokyo.s.j@chudenko.co.jp / tokyo.s.k@chudenko.co.jp'},
+  'アクア':{closeDay:'末日',payDay:'翌翌10日',sendMethod:'原本送付・メール'},
+  '京王建設':{closeDay:'15日',earlyClose:'有り',payDay:'翌15日',sendMethod:'メール'},
+  'ＮＩＰＰＯ':{closeDay:'末日',payDay:'翌々10日',sendMethod:'原本送付・メール'},
+  'トーヨーアサノ':{closeDay:'20日',payDay:'翌20日',sendMethod:'原本送付'},
+  'ピーエス・コンストラクション':{closeDay:'末日',earlyClose:'有り',payDay:'翌々25日',sendMethod:'メール'},
+  '小川建設':{closeDay:'10日',payDay:'翌月末',sendMethod:'原本送付'},
+  'ミライトワン':{closeDay:'末日',payDay:'翌月末',sendMethod:'原本送付・メール'},
+};
+
+// ════ SFA DATA (imported from spreadsheet) ════
+// Helper to determine status from リスト担当者 column
+function detectStatus(chaser, memo) {
+  if(!chaser) return '未顧客';
+  const c = String(chaser).trim();
+  if(c.includes('田中')) return '田中追い';
+  if(c.includes('伊波')) return '伊波追い';
+  if(c.includes('尾上')) return '尾上追い';
+  return '未顧客';
+}
+
+// Raw SFA data — key fields only (company, branch, industry, phone, keyname, lastContact, memo, url, chaser)
+const SFA_RAW = [
+  {c:'アネス',b:'',ind:'空調',ph:'03-3913-4123',key:'',lc:'2026/02/17',memo:'担当：まつした様　5/8　16時～　まつしたさん退職　後任林様　いま派遣会社多すぎて制限していて人員も充足',url:'',ch:''},
+  {c:'大成温調',b:'東京本社',ind:'設備',ph:'03-5742-7331',key:'岡本部長',lc:'2024/11/20',memo:'担当者不在。明日以降再架電',url:'https://www.taisei-oncho.co.jp/',ch:''},
+  {c:'太平電業',b:'東京本社',ind:'電気',ph:'03-5213-7211',key:'浅井部長',lc:'2026/03/17',memo:'東京支社　0366837316　派遣受入なし/　本社　都築部長/浅井部長　5/15 9:00~',url:'https://www.taihei-dengyo.co.jp/',ch:''},
+  {c:'大栄電気',b:'',ind:'',ph:'03-6738-8888',key:'',lc:'2026/03/17',memo:'',url:'',ch:''},
+  {c:'新菱冷熱工業',b:'',ind:'設備',ph:'03-3357-2151',key:'',lc:'2024/10/28',memo:'本店でない。電気計装なら行けるかも',url:'https://www.shinryo.com/',ch:''},
+  {c:'櫻井工業',b:'',ind:'設備',ph:'',key:'工事部/高柳',lc:'2026/03/18',memo:'',url:'',ch:'田中'},
+  {c:'日本電技',b:'',ind:'電気',ph:'',key:'',lc:'2026/03/19',memo:'原田さん　3/19　保坂業務課長　会議中/真鍋支店長　会議中　045-438-1211',url:'',ch:'伊波'},
+  {c:'東急建設',b:'',ind:'建築',ph:'03-5466-5122',key:'ヨシイ様',lc:'2024/11/15',memo:'11月21日9:30　3階受付　担当者：カタヤマ様　人材派遣　時期により興味あり',url:'',ch:''},
+  {c:'中電工',b:'',ind:'電気',ph:'03-6300-0680',key:'山中',lc:'2024/10/08',memo:'10/08東京本部/女性→山中さん/メアド取得　10/16 11:00挨拶アポ 三好さんカウント',url:'https://www.chudenko.co.jp/',ch:''},
+  {c:'大和リース',b:'',ind:'建築',ph:'',key:'村田様',lc:'2026/03/19',memo:'岡山支店：石井課長　k-ishii@daiwalease.jp　宮崎支店：松村課長　千葉支店：043-331-6180　木下様　3/25AP',url:'',ch:'伊波'},
+  {c:'新菱冷熱工業',b:'横浜支店',ind:'設備',ph:'045-224-2900',key:'',lc:'2025/02/03',memo:'本社で一括している',url:'',ch:''},
+  {c:'三機工業',b:'横浜支店',ind:'設備',ph:'045-394-0930',key:'',lc:'2025/01/22',memo:'全て東京支社にてやっている',url:'https://www.sanki.co.jp/',ch:''},
+  {c:'三機工業',b:'',ind:'設備',ph:'03-6367-7080',key:'',lc:'2024/10/08',memo:'10/08女性/それぞれの部署で派遣採用しているので取り次げない',url:'https://www.sanki.co.jp/',ch:''},
+  {c:'京王建設',b:'',ind:'建築',ph:'042-336-7333',key:'前山部長',lc:'2025/04/24',memo:'9/19 今週はいない→9/30男性/前山さん席外し/折り返し来るかも　人材派遣は増田さんが担当/不在　5/15訪問',url:'https://www.keio-const.co.jp/',ch:''},
+  {c:'奥村組',b:'',ind:'建築',ph:'03-3454-8111',key:'',lc:'2024/11/01',memo:'東京本社・東日本支店　コタケ様　11/6 15:00訪問',url:'https://www.okumuragumi.co.jp/',ch:''},
+  {c:'ミライトワン',b:'',ind:'電気',ph:'03-6807-3111',key:'中本課長',lc:'2025/07/07',memo:'岩瀬氏　着任　土木事業部　土木CADオペは夢真からで来週から着任予定',url:'',ch:''},
+  {c:'トーヨーアサノ',b:'',ind:'その他',ph:'03-3356-3173',key:'',lc:'2025/04/30',memo:'5/8　おおつぼ様宛　単価表　アーキ付き合いあり　山西部長：いま中途で人が入ってきてて4月末で研修終わる',url:'https://www.toyoasano.co.jp/about/factory.html',ch:''},
+  {c:'テクノ菱和',b:'',ind:'設備',ph:'',key:'工務部/柴田',lc:'',memo:'',url:'',ch:''},
+  {c:'テイエム技建',b:'',ind:'',ph:'',key:'坂内様',lc:'',memo:'1月9日17:00＠新橋',url:'',ch:''},
+  {c:'オイレスECO',b:'',ind:'',ph:'03-5435-5465',key:'伊賀様',lc:'',memo:'',url:'',ch:''},
+  {c:'アクア',b:'',ind:'',ph:'',key:'香月代表',lc:'2025/05/20',memo:'香月社長　まだ人足りない。34歳以下で男性・免許ありであればOK',url:'',ch:''},
+  {c:'三井住友建設',b:'横浜支店',ind:'建築',ph:'045-393-1807',key:'建築グループ長 ナカジマ様',lc:'2026/03/19',memo:'また4月入ってから連絡頂戴と。人材について派遣で検討したい現場もあるので打合せしたい。',url:'https://www.smcon.co.jp/company/branch/',ch:'伊波'},
+  {c:'国土防災技術',b:'',ind:'',ph:'03-3436-3673',key:'',lc:'2025/05/07',memo:'さいたま技術本部　048-833-0422　こんどう支社長　5/13　15時～',url:'https://www.jce.co.jp/company/',ch:''},
+  {c:'呉光塗装',b:'',ind:'その他',ph:'047-365-1531',key:'大塚',lc:'2026/03/19',memo:'担当：大塚様　現状いらないが、たまに補助を依頼することがある。6/17訪問　盆明けから必要になるかも。',url:'',ch:'伊波'},
+  {c:'五洋建設',b:'',ind:'建築',ph:'03-3817-7600',key:'岡村設備部長',lc:'',memo:'東京建築支店:クサノ様 10/2 11:00訪問　2/6　設備部：03-3817-8725',url:'https://www.penta-ocean.co.jp/index.html',ch:''},
+  {c:'戸田建設',b:'',ind:'建築',ph:'03-4582-3142',key:'スガワラ様（横浜支店）',lc:'2024/11/15',memo:'興味あり、ただ11月が忙しい為、12月に顔合わせをしたい',url:'',ch:'田中'},
+  {c:'栗原工業',b:'',ind:'電気',ph:'03-6400-3006',key:'',lc:'2025/12/25',memo:'工事管理部　原岡次長（現場出ずっぱ）　横浜支店：045-311-6281　羽淵様',url:'',ch:'伊波'},
+  {c:'熊谷組',b:'',ind:'建築',ph:'03-3260-1148',key:'',lc:'2025/11/17',memo:'建築部はROKUでの募集のみ。新卒も同様で今年度は終了。',url:'',ch:''},
+  {c:'九電工（クラフティア）',b:'',ind:'電気',ph:'03-3980-8194',key:'',lc:'2026/01/23',memo:'電気）今新規取引先を増やすきはない',url:'',ch:'伊波'},
+  {c:'関電工',b:'',ind:'電気',ph:'',key:'',lc:'',memo:'東京支店：050(3133)0458　現状充足　埼玉支店：050(3132)4196　栃木支店：050(3033)8501',url:'',ch:'伊波'},
+  {c:'麦島建設',b:'',ind:'建築',ph:'03-3288-1055',key:'',lc:'2024/11/15',memo:'11月19日10:00　担当：クドウ様　即ＯＫ',url:'https://www.mugishima.com/',ch:''},
+  {c:'大洋',b:'東京本店',ind:'',ph:'03-6228-3777',key:'',lc:'2025/06/27',memo:'4/9でオンライン打ち合わせアポ',url:'https://www.taiyo-group.com/',ch:''},
+  {c:'大都',b:'',ind:'',ph:'03-3584-0125',key:'小林様',lc:'2025/02/05',memo:'2/10 16:00アポ',url:'https://www.daito.biz/about/company.html',ch:''},
+  {c:'大勝建設',b:'',ind:'',ph:'',key:'藤岡専務',lc:'2025/04/24',memo:'藤岡専務はGW明まで東京にいない。5/1　東京支店　ふじはら副支店長',url:'https://www.dainet.co.jp/gaiyo.html',ch:''},
+  {c:'スターツＣＡＭ',b:'',ind:'建築',ph:'03-6895-7701',key:'木村部長',lc:'2024/11/20',memo:'上野の代わりはみつかった。経験者であれば随時紹介してほしいよと。いまだと、木造の建方できる人を探している',url:'',ch:''},
+  {c:'コマニー',b:'西東京営業所',ind:'',ph:'042-306-6357',key:'中村所長',lc:'2025/09/22',memo:'9/26　訪問AP',url:'',ch:''},
+  {c:'きんでん',b:'',ind:'電気',ph:'045-683-3456',key:'',lc:'2025/12/24',memo:'折り返ししますとのこと。不要＠東京　横浜支店⇒担当打合せ中再度',url:'',ch:'伊波'},
+  {c:'オーク設備工業',b:'',ind:'設備',ph:'03-3553-2965',key:'ウシジマ様',lc:'2024/11/20',memo:'ryou.ushijima@oaksetsubi.co.jp',url:'',ch:'伊波'},
+  {c:'アペックエンジニアリング',b:'',ind:'設備',ph:'04865077778',key:'イシダ様',lc:'2024/11/19',memo:'11月27日10:30　工務部　随時人員の募集はかけている。戸田建設グループ会社',url:'https://www.apeceng.co.jp/',ch:''},
+  {c:'アーバンストラクション',b:'',ind:'建築',ph:'03-6758-4193',key:'篠崎健司/代表',lc:'2024/11/08',memo:'１１月１３日１６:００より商談',url:'https://www.sky-field.co.jp/company/urbanstruction/',ch:''},
+  {c:'TMES',b:'',ind:'設備',ph:'03-3687-3201',key:'',lc:'2025/05/07',memo:'担当がHP見て興味があれば',url:'https://www.tm-es.co.jp/',ch:''},
+  {c:'淺沼組',b:'',ind:'建築',ph:'03-5232-5840',key:'尾崎工事部長',lc:'2024/11/11',memo:'11月18日10:00＠東京本店5F建築部　田町駅',url:'https://www.asanuma.co.jp/',ch:''},
+  {c:'雄電社',b:'',ind:'電気',ph:'03-3786-1161',key:'佐藤部長',lc:'2025/12/19',memo:'東京本社：佐藤部長　横浜支店：045-312-1621　東関東支店：043-227-0391',url:'',ch:''},
+  {c:'野村不動産パートナーズ',b:'',ind:'',ph:'',key:'きくち様',lc:'2025/02/06',memo:'2/21 11:00~ アポイント　建築インテリア２部',url:'',ch:''},
+  {c:'明電舎',b:'',ind:'電気',ph:'03-6420-8400',key:'',lc:'2024/11/05',memo:'齊藤が電気設備のイベントで接触からのアポ訪問 プラント系',url:'https://www.meidensha.co.jp/corporate/corp_07/corp_07_01/',ch:''},
+  {c:'北野建設',b:'',ind:'建築',ph:'03-3562-2331',key:'',lc:'2025/06/30',memo:'7/1 11:30~ 工務部 和田様',url:'https://www.kitano.co.jp/corporate/outline/',ch:''},
+  {c:'菱和設備',b:'',ind:'設備',ph:'03-3205-8131',key:'鈴木',lc:'',memo:'即ＯＫ　2/6　東京支店：鈴木さん不在　横浜支店：1/28　045-243-2345：不在',url:'http://www.ryowa-s.co.jp/outline/index.html',ch:'尾上'},
+  {c:'入沢工務店',b:'',ind:'建築',ph:'03-3638-1456',key:'かんべ',lc:'2026/02/03',memo:'2月にアポになる。45万～と新卒40万～と伝え、元夢真と伝えたら納得してくれた',url:'http://www.irisawakoumuten.co.jp/',ch:''},
+  {c:'日本設備工業',b:'',ind:'設備',ph:'03-4213-4900',key:'',lc:'2026/01/15',memo:'03-4213-4911　東京支店　鈴木あきのり様　若手はいるから中間管理を紹介してほしい',url:'https://www.nihonsetsubi.co.jp/',ch:''},
+  {c:'日本工営',b:'',ind:'',ph:'',key:'小宮部長',lc:'',memo:'日本工営エナジーソリューションズ：田中課長　3/17川崎の現場訪問　本社：小宮部長　5/27訪問',url:'',ch:''},
+  {c:'日本ファシリオ',b:'東京本店',ind:'設備',ph:'03-5411-5700',key:'',lc:'2024/11/27',memo:'現場毎に採用している',url:'',ch:''},
+  {c:'日本ビソー',b:'',ind:'その他',ph:'03-5444-3889',key:'永井部長',lc:'2026/03/23',memo:'第一工事部佐野様アポ 11/6 17:30　つながるが、新規派遣会社はいま大丈夫',url:'https://www.bisoh.co.jp/',ch:'尾上'},
+  {c:'日比谷総合設備',b:'',ind:'設備',ph:'03-34531291',key:'',lc:'2026/03/18',memo:'古里部長宛てにTEL(佐土原案件)',url:'https://www.hibiya-eng.co.jp/ja/index.html',ch:'尾上'},
+  {c:'日成ビルド工業',b:'東京本店',ind:'',ph:'03-4554-3164',key:'のざき部長',lc:'2026/01/09',memo:'野崎部長：6/19訪問　深沢様：CADオペはいま現状不要になった。',url:'https://www.nisseibuild.co.jp/company/network.html',ch:'伊波'},
+  {c:'南海辰村建設',b:'',ind:'建築',ph:'03-3547-4061',key:'坂根',lc:'2025/12/24',memo:'新卒うまいこと採用できてるっぽいが一応社内でも共有しておきますと。',url:'',ch:''},
+  {c:'内藤ハウス',b:'',ind:'建築',ph:'',key:'',lc:'2025/12/04',memo:'不要＠東京支店　11/21 13:30 ナカゴミ様＠横浜支店　経験者の派遣が欲しい。',url:'',ch:''},
+  {c:'東鉄工業',b:'千葉支店',ind:'建築',ph:'043-251-8221',key:'サノ様',lc:'2026/03/18',memo:'ご挨拶承諾。12月にまた連絡ください。',url:'',ch:''},
+  {c:'東光電気工事',b:'',ind:'電気',ph:'',key:'山岸課長（トーチ）',lc:'2025/05/09',memo:'03-6281-9961 CADオペ依頼？',url:'',ch:''},
+  {c:'東京ダイヤエアコン',b:'',ind:'設備',ph:'03-6233-5110',key:'猪俣取締役',lc:'2024/10/28',memo:'10/30 10:00~アポ',url:'http://www.dia-aircon.co.jp/',ch:''},
+  {c:'東亜建設工業',b:'横浜支店',ind:'建築',ph:'045-664-1335',key:'土木部 伊藤様(女性)',lc:'2025/12/09',memo:'ROKUにて募集かけてていまは需要なし',url:'',ch:''},
+  {c:'東亜建設工業',b:'',ind:'建築',ph:'03-6757-3804',key:'建築一課長 村上様',lc:'2025/12/09',memo:'担当者会議中の為、再度かけ直し',url:'',ch:''},
+  {c:'鉄建建設',b:'',ind:'土木',ph:'03-3221-2235',key:'',lc:'2025/06/30',memo:'6/30 16:00~ アポ　磯辺',url:'',ch:''},
+  {c:'朝日工業社',b:'北関東支店',ind:'設備',ph:'03-6452-8181',key:'北関東支店 髙岡様',lc:'2026/02/10',memo:'北関東支店アポ 10/29 9:00~',url:'https://www.asahikogyosha.co.jp/',ch:'尾上'},
+  {c:'池田煖房工業',b:'',ind:'設備',ph:'03-5273-0191',key:'三間部長',lc:'',memo:'',url:'',ch:''},
+  {c:'第一工業',b:'環境設備事業',ind:'設備',ph:'03-6633-7771',key:'設計部　渡辺様',lc:'2025/04/03',memo:'4/3 13:30',url:'',ch:''},
+  {c:'大豊建設',b:'',ind:'建築',ph:'03-5541-5033',key:'',lc:'2024/11/08',memo:'11月19日13:00＠茅場町　東京建築支店：モリオカ様',url:'https://www.daiho.co.jp/company/esaddress/',ch:''},
+  {c:'大成設備',b:'東京支店',ind:'設備',ph:'03-6302-0190',key:'',lc:'2024/11/20',memo:'担当者不在。明日以降再再架電',url:'',ch:''},
+  {c:'大成建設',b:'',ind:'建築',ph:'03-3535-8021',key:'',lc:'2026/03/18',memo:'横浜支店：045(232)5814　千葉支店：(043)243-1611　人事部人事室：03-5381-5015（加藤）新卒：木下',url:'https://www.taisei.co.jp/corp/branch.html',ch:''},
+  {c:'大成ユーレック',b:'',ind:'建築',ph:'03-6230-1700',key:'',lc:'2025/07/14',memo:'北関東営業所：亀谷所長　7/15訪問予定',url:'https://www.u-lec.com/company/branch/',ch:''},
+  {c:'青木あすなろ建設',b:'',ind:'建築',ph:'03-5439-8523',key:'いわたに工事部長',lc:'2026/03/19',memo:'とみた様10/15挨拶訪問　岩谷工事部長　外出戻りなし再度',url:'',ch:'伊波'},
+  {c:'関工ファシリティーズ',b:'',ind:'電気',ph:'',key:'総務部 阿部さん',lc:'2025/05/20',memo:'5/22 13:00 総務部　アベ様(女性)',url:'',ch:'尾上'},
+  {c:'大本組',b:'',ind:'',ph:'',key:'',lc:'2025/06/02',memo:'東京支店　土木）03-6752-7030　建築）03-6752-7023　熊田次長　6月9日訪問',url:'https://www.ohmoto.co.jp/gaiyou_page/jigyosyo.html',ch:''},
+  {c:'ニッタン',b:'',ind:'',ph:'03-5333-8603',key:'',lc:'2026/03/19',memo:'総務人事：山本課長　5/27　訪問　北関東支店：経験者人材であれば',url:'https://www.nittan.com/about/nw_domestic.html#kanto_joetsu',ch:'伊波'},
+  {c:'錢高組',b:'',ind:'建築',ph:'03-3265-4611',key:'木村（建築）',lc:'2025/12/09',memo:'杭から竣工までしっかり経験のある方で即戦力なら紹介してください',url:'https://www.zenitaka.co.jp/company/office.html',ch:''},
+  {c:'須賀工業',b:'',ind:'設備',ph:'03-4214-3411',key:'横内さん',lc:'2026/01/28',memo:'挨拶は不要。紹介した人材いたらメールして工事のものになげて反応あればって形でお願いしたい',url:'https://www.suga-kogyo.co.jp/',ch:''},
+  {c:'三谷産業',b:'',ind:'',ph:'03-3514-6001',key:'源田',lc:'2025/05/28',memo:'担当者：源田様　経験者以外は不要。h.genda@mitani.co.jp',url:'https://www.mitani.co.jp/company/profile',ch:''},
+  {c:'日向興発',b:'',ind:'建築',ph:'03-5333-0283',key:'',lc:'2026/01/06',memo:'人事担当者あてで一度メールを送ってくださいと。support@hyu-ga.com',url:'https://www.hyu-ga.com/company.html',ch:''},
+  {c:'大林組',b:'',ind:'建築',ph:'03-5769-1111',key:'',lc:'2026/01/06',memo:'東京本店（品川）：土木企画本部　03-5769-1257　建築企業本部　03-5769-1763',url:'',ch:''},
+  {c:'大気社',b:'',ind:'設備',ph:'03-3365-5320',key:'',lc:'2025/12/25',memo:'関東信越→本社管轄　横浜支店：045-323-3771',url:'https://www.taikisha.co.jp/',ch:''},
+  {c:'前田道路',b:'東京支店',ind:'土木',ph:'03-3448-2231',key:'工務部　滝沢',lc:'2025/06/25',memo:'来週以降',url:'',ch:''},
+  {c:'川田工業',b:'',ind:'土木',ph:'03-3915-4321',key:'',lc:'2025/12/24',memo:'鉄構事業部　TEL 03-6385-8750　建築事業部　TEL 03-6757-7138',url:'https://www.kawada.co.jp/company/branch.html',ch:''},
+  {c:'生和コーポレーション',b:'',ind:'建築',ph:'03-3257-0896',key:'',lc:'2026/03/16',memo:'3/4　千葉支店　久保課長：現状配置終わって充足。9月ごろからまた忙しくなる',url:'',ch:'伊波'},
+  {c:'斎久工業',b:'',ind:'設備',ph:'03(3201)0319',key:'',lc:'2025/12/24',memo:'現場ごとでの派遣採用',url:'https://www.saikyu.co.jp/corporate/about/',ch:''},
+  {c:'鴻池組',b:'',ind:'建築',ph:'03-5201-7600',key:'',lc:'2025/12/09',memo:'ＦＡＸなどで会社概要や資料をお送りするように　＠東京本店',url:'https://www.konoike.co.jp/company/network.html',ch:''},
+  {c:'高砂熱学工業',b:'',ind:'設備',ph:'03-6369-8212',key:'',lc:'2026/01/23',memo:'担当者ご指名制　東京本店品質環境安全部：山代秀一',url:'https://www.tte-net.com/index.html',ch:''},
+  {c:'大成ロテック',b:'',ind:'土木',ph:'03-5925-9431',key:'',lc:'',memo:'塚本さん　本社総務へ異動。また来週で挨拶予定',url:'https://www.taiseirotec.co.jp/',ch:''},
+  {c:'西原衛生工業所',b:'',ind:'設備',ph:'03-4218-3950',key:'',lc:'2025/06/02',memo:'横浜支店：鈴木支店長　大阪本店：植田元横浜支店長',url:'',ch:''},
+  {c:'レーベンホームビルド',b:'',ind:'建築',ph:'03-6262-1071',key:'横浜 管理部/木村',lc:'2026/03/10',memo:'木村様は部署異動。人事担当宛：12日再度',url:'',ch:'尾上'},
+  {c:'浅海電気',b:'',ind:'電気',ph:'03-3243-1671',key:'しち様',lc:'2025/07/16',memo:'片岡部長 紹介',url:'https://www.asamidenki.co.jp/',ch:'伊波'},
+  {c:'川村組',b:'',ind:'建築',ph:'03-6665-0155',key:'新井千晶/総務部/主任',lc:'2024/11/07',memo:'紹介予定派遣であれば興味あり。12日10時から',url:'http://www.kawamuragumi.net/',ch:''},
+  {c:'川崎設備工業',b:'',ind:'設備',ph:'03-3402-6331',key:'',lc:'2025/12/23',memo:'分かる者が今日明日休み。名前教えてくれず',url:'https://www.kawasaki-sk.co.jp/',ch:''},
+  {c:'西松建設',b:'',ind:'建築',ph:'03-3502-0294',key:'たじま',lc:'2025/04/14',memo:'4/23　田島課長　窓口を増やすことはやぶさかではないが、総務が嫌がる',url:'',ch:''},
+  {c:'清水建設',b:'',ind:'建築',ph:'03-3561-3100',key:'小寺事務長（とーち）',lc:'2026/01/06',memo:'建築本部：赤井様　土木本部：カメダ様　6/10訪問　横浜支店：045-261-3981',url:'',ch:''},
+  {c:'三晃空調',b:'',ind:'設備',ph:'03-3344-7931',key:'',lc:'2026/01/05',memo:'現場単位で採用しているので本社には話せる人がいないと',url:'https://www.sanko-air.co.jp/',ch:''},
+  {c:'三建設備工業',b:'',ind:'設備',ph:'',key:'北関東/おいかわ様',lc:'2026/03/10',memo:'東京：折り返し。横浜：meーる宛yokohama-eng@skk.jp 新築空調衛生の5年以上経験者　埼玉：おいかわ部長宛',url:'https://skk.jp/corporate/group/',ch:''},
+  {c:'安藤ハザマ',b:'東京支店',ind:'建築',ph:'03-3575-6001',key:'いとう',lc:'2025/07/02',memo:'伊藤様：ショートメールでアドレス送ってくれる。',url:'',ch:''},
+  {c:'住協建設',b:'',ind:'建築',ph:'04-2957-8300',key:'',lc:'2026/02/02',memo:'正社員が欲しい。ただ責任者ではなさそう。',url:'https://www.jyukyo-cnst.co.jp/company/office/',ch:''},
+  {c:'鹿島建設',b:'',ind:'建築',ph:'03-3404-5511',key:'宇敷安敏',lc:'2025/07/16',memo:'必要があれば電話を致します',url:'',ch:''},
+  {c:'弘電社',b:'',ind:'電気',ph:'03-3542-5111',key:'クサノ様',lc:'2024/11/11',memo:'内線工事経験者がいれば欲しい。入り次第連絡くださいとのこと。',url:'https://www.kk-kodensha.co.jp/',ch:''},
+  {c:'三協フロンテア',b:'',ind:'建築',ph:'04-7133-3361',key:'イワモト様',lc:'2024/11/11',memo:'11日13:00＠zoom　東京で作図が出来るレベルのCADオペが欲しい',url:'',ch:''},
+  {c:'リンクス・ビルド',b:'',ind:'建築',ph:'047-460-5222',key:'かけがわ',lc:'2026/06/19',memo:'コンサル依頼している会社があり、他のとこはすべて断っている',url:'https://links-g.com/',ch:''},
+  {c:'りんかい日産建設',b:'',ind:'建築',ph:'03(6897)4801',key:'',lc:'2025/05/07',memo:'5/15　土木事業本部　森様　建築　03-6897-4842',url:'https://www.rncc.co.jp/company/profile_network.html',ch:'伊波'},
+  {c:'ユアテック',b:'',ind:'電気',ph:'03-3243-7117',key:'',lc:'2025/12/04',memo:'電気設備工事の稼働者ができてからもう一度連絡くださいとのこと。',url:'',ch:''},
+  {c:'ファーストコーポレーション',b:'',ind:'建築',ph:'03-5347-9103',key:'おじま様',lc:'2026/03/10',memo:'生産管理部 おじま様 契約の窓口やっている人',url:'',ch:''},
+  {c:'ヒメノ',b:'',ind:'設備',ph:'03-3865-5041',key:'',lc:'2024/11/13',memo:'11/20 14:00から東京本社　先方担当者カツマタ様',url:'https://www.himeno.co.jp/',ch:''},
+  {c:'ダイダン',b:'',ind:'設備',ph:'03-5639-0721',key:'',lc:'2025/12/04',memo:'派遣の募集はしていない　技術本部：03-5326-7133',url:'https://www.daidan.co.jp/',ch:''},
+  {c:'長谷工ジョブクリエイト',b:'',ind:'建築',ph:'03-5427-0828',key:'はしだて様',lc:'2025/05/01',memo:'5/7　はしだて様',url:'https://www.haseko.co.jp/hjc/profile/',ch:''},
+  {c:'日成ビルド工業',b:'千葉支店',ind:'',ph:'(043)241-1613',key:'',lc:'2026/03/23',memo:'担当会議中　夕方再度',url:'',ch:'伊波'},
+  {c:'東洋建設',b:'',ind:'建築',ph:'03-6361-5552',key:'',lc:'2025/11/17',memo:'yokoi-atusushi@tpyo-const.co.jp宛に人材紹介',url:'',ch:''},
+  {c:'三建設備工業',b:'横浜支店',ind:'設備',ph:'',key:'横浜/岸本次長',lc:'2026/03/10',memo:'横浜：メール宛yokohama-eng@skk.jp 新築空調衛生の5年以上経験者',url:'',ch:''},
+  {c:'リック',b:'',ind:'設備',ph:'03-5418-5854',key:'佐藤',lc:'2026/03/10',memo:'総務部　部長佐藤様とアポあり',url:'https://ri-k.co.jp/corporate/access/',ch:''},
+  {c:'山田工務所',b:'',ind:'建築',ph:'043-261-4151',key:'後藤',lc:'2026/03/09',memo:'工事部　後藤様宛て　→　練馬と日本橋で若手案件',url:'https://yamada-koumusho.com/application-requirements/',ch:''},
+  {c:'センクシア',b:'',ind:'建築',ph:'03-4214-1972',key:'田中さん',lc:'2026/03/23',memo:'3月25日ＡＰ訪問　5月ごろから補充を考えている',url:'https://www.senqcia.co.jp/corporate/location/',ch:''},
+  {c:'TCS',b:'',ind:'建築',ph:'03-6807-6304',key:'',lc:'2026/03/17',memo:'東京支店：03-6807-6513　串木様　2/18AP　埼玉支店：048-788-3061　きむら様　2/16AP',url:'https://www.tcs-life-net.co.jp/company/#branch',ch:''},
+  {c:'NIPPO',b:'復旧事業所',ind:'土木',ph:'03-5323-3690',key:'重村副所長',lc:'2025/05/28',memo:'5/28　訪問',url:'https://www.nippo-c.co.jp/company/network/kanto-1.html',ch:''},
+  {c:'大和財託',b:'',ind:'建築',ph:'03-6805-0325',key:'せんない様',lc:'2026/03/23',memo:'3月26日13時　せんない様AP訪問',url:'https://yamatozaitaku.com/company/',ch:''},
+  {c:'川口土木建設工業',b:'',ind:'土木',ph:'048-224-5111',key:'',lc:'2026/03/12',memo:'総務：さくらい様宛　3/19　9時30分～訪問予定',url:'https://www.kawado.co.jp/company/',ch:''},
+  {c:'北川ヒューテック',b:'',ind:'建築',ph:'(03) 3661-6881',key:'おけたに工事部長',lc:'2026/03/12',memo:'日本橋本社：おけたに工事部長　4月以降でまた連絡ほしい',url:'https://www.k-hutec.co.jp/profile/',ch:''},
+  {c:'朝日機器エンジニアリング',b:'',ind:'設備',ph:'03-3878-9871',key:'本社総務部　あだち様',lc:'2026/03/23',memo:'本社：052-901-9111　若手をゆくゆくは正社員としてで派遣利用している。東京の方でも需要あるか確認してこちらから連絡するとのこと。',url:'http://www.akefron.co.jp/company/company.html',ch:'伊波'},
+  {c:'ホーチキ',b:'',ind:'設備',ph:'03-3444-4113',key:'',lc:'2026/03/19',memo:'東京支店：03-3444-4120　横浜支店：045-227-2501　東関東支社：043-223-5533',url:'https://www.hochiki.co.jp/corporation/map/',ch:'伊波'},
+  {c:'フジタ',b:'',ind:'建築',ph:'045-594-6722',key:'市川担当部長',lc:'2025/09/04',memo:'現状自社稼働がない場所とは取引しない　市川部長メアド：kichikawa@fujita.co.jp',url:'',ch:''},
+  {c:'イオンディライトコネクト',b:'',ind:'電気',ph:'03-5155-8301',key:'菅原',lc:'2026/03/23',memo:'電気経験者：金城さん職人40年選手はNG。しっかり施工管理としての経験をお持ちの方であれば年齢的には問題ないがと。',url:'http://aeondelightconnect.com/corporate/outline.html',ch:'伊波'},
+  {c:'大成ロテック',b:'',ind:'土木',ph:'03-5925-9431',key:'',lc:'',memo:'塚本さん　本社総務へ異動',url:'',ch:''},
+  {c:'日建設計',b:'',ind:'建築',ph:'03-5226-3030',key:'',lc:'2026/03/23',memo:'御担当者　不在',url:'https://www.nikken.co.jp/ja/',ch:''},
+];
+
+// ════ STATE ════
+const state = {
+  companies: [],
+  phaseItems: [
+    {id:201,name:'山田建設 現場スタッフ紹介',company:'山田建設株式会社',person:'山田 太郎',phase:2,memo:'未経験2名紹介予定',date:'2026/03/20',activities:[{id:301,type:'📞',text:'先方担当者に連絡。スキルシートを送付済み。',date:'2026/03/20',time:'10:00'}]},
+    {id:202,name:'近畿設備 資格者採用',company:'近畿設備工業',person:'鈴木 一郎',phase:4,memo:'電気工事士1名',date:'2026/03/18',activities:[]},
+    {id:203,name:'関西電工 新現場要員',company:'関西電工株式会社',person:'田中 誠',phase:6,memo:'見学会4月5日',date:'2026/03/22',activities:[{id:302,type:'✅',text:'見学会日程を4月5日に確定。候補者3名に通知済み。',date:'2026/03/22',time:'11:30'}]},
+  ],
+  savedSummaries:[],
+  companyFilter:{q:'',status:'',industry:'',chaser:''},
+  currentPhaseId:null,
+  currentCompanyId:null,
+};
+
+// Build companies from SFA data
+function buildCompaniesFromSFA() {
+  const map = {};
+  SFA_RAW.forEach((r,i) => {
+    const key = r.c + (r.b ? '_'+r.b : '');
+    if(map[key]) return; // deduplicate same company+branch
+    const existingInfo = EXISTING_DATA[r.c] || null;
+    const status = existingInfo ? '既存顧客' : (r.ch ? (r.ch+'追い') : '未顧客');
+    map[key] = {
+      id: 1000+i,
+      company: r.c,
+      branch: r.b||'',
+      industry: r.ind||'',
+      phone: r.ph||'',
+      keyname: r.key||'',
+      lastContact: r.lc||'',
+      memo: r.memo||'',
+      url: r.url||'',
+      chaser: r.ch||'',
+      status: status,
+      existingInfo: existingInfo,
+      activities: [],
+    };
+  });
+  return Object.values(map);
+}
+state.companies = buildCompaniesFromSFA();
+
+// ════ STATE (deals, phase items, filters, etc.) ════
+const state2 = {
+  deals: [
+    {id:201, name:'山田建設 現場スタッフ紹介', customer:'山田 太郎', company:'山田建設株式会社', stage:'未経験案件獲得', memo:'未経験2名紹介予定'},
+    {id:202, name:'近畿設備 資格者採用', customer:'鈴木 一郎', company:'近畿設備工業', stage:'人材紹介', memo:'電気工事士1名'},
+    {id:203, name:'関西電工 新現場要員', customer:'田中 誠', company:'関西電工株式会社', stage:'見学会日程決定', memo:'見学会4月5日'},
+  ],
+  savedSummaries: [],
+  filterStatus: '',
+  filterIndustry: '',
+  filterChaser: '',
+  searchQ: '',
+  currentDealId: null,
+  chaserStatus: '',
+};
+
+// ════ UTILS ════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function nowDT(){const d=new Date();return{date:d.toLocaleDateString('ja-JP'),time:d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})};}
+function countByStatus(s){return state.companies.filter(c=>c.status===s).length;}
+function av(i){return AV_COLORS[i%AV_COLORS.length];}
+function openModal(id){document.getElementById('modal-'+id).classList.add('open');}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+function circleStage(s){const idx=['アポ訪問','未経験案件獲得','人選中','人材紹介','見学会日程調整中','見学会日程決定','見学会実施','結果待ち','初日同行'].indexOf(s)+1;return idx?['①','②','③','④','⑤','⑥','⑦','⑧','⑨'][idx-1]||s:s;}
+
+// ════ NAVIGATION ════
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab,.sidebar-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  // sync counterpart (sidebar vs bottom nav)
+  const si=document.getElementById('si-'+id); if(si&&si!==el) si.classList.add('active');
+  const tab=document.getElementById('tab-'+id); if(tab&&tab!==el) tab.classList.add('active');
+  if(id==='dashboard') renderDashboard();
+  if(id==='customers'){buildFilterChips();renderCustomers();}
+  if(id==='pipeline') renderPipeline();
+}
+
+// ════ DASHBOARD ════
+function renderDashboard(){
+  document.getElementById('kpi-total').textContent = state.companies.length;
+  document.getElementById('kpi-existing').textContent = countByStatus('既存顧客');
+  document.getElementById('kpi-phase').textContent = state2.deals.length;
+  document.getElementById('kpi-chasing').textContent = CHASE.reduce((s,st)=>s+countByStatus(st),0);
+
+  document.getElementById('quotaRow').innerHTML = MEMBER_CFG.map(m=>{
+    const cnt=countByStatus(m.status), pct=Math.min(Math.round(cnt/LIMIT*100),100);
+    const full=cnt>=LIMIT, near=cnt>=12;
+    return `<div class="quota-mini ${full?'over':near?'near':''}" onclick="openChaserReport('${m.status}')">
+      <div class="quota-head"><span class="quota-name" style="color:${m.color}">${m.name}担当</span><span class="quota-num" style="color:${full?'var(--danger)':near?'var(--warning)':m.color}">${cnt}/${LIMIT}</span></div>
+      <div class="quota-bar-bg"><div class="quota-bar-fill" style="width:${pct}%;background:${full?'var(--danger)':near?'var(--warning)':m.color}"></div></div>
+      ${full?`<div class="quota-warn">⚠ 上限超過！</div>`:near?`<div class="quota-warn">残り${LIMIT-cnt}件</div>`:''}
+      <div class="quota-hint">📋 クリックで詳細レポート</div>
+    </div>`;
+  }).join('');
+
+  const inds=['建築','設備','電気','土木','空調','計装','プラント','その他'];
+  const iCols=['#2563eb','#059669','#ea580c','#d97706','#0891b2','#7c3aed','#db2777','#6b7280'];
+  const maxI=Math.max(...inds.map(i=>state.companies.filter(c=>c.industry===i).length),1);
+  document.getElementById('industryChart').innerHTML=inds.map((ind,i)=>{
+    const cnt=state.companies.filter(c=>c.industry===ind).length;
+    if(!cnt) return '';
+    return `<div class="mini-bar-row" onclick="openReport('industry:${ind}')">
+      <div class="mini-bar-label" style="color:${iCols[i]}">${ind}</div>
+      <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${Math.round(cnt/maxI*100)}%;background:${iCols[i]}"></div></div>
+      <div class="mini-bar-val" style="color:${iCols[i]}">${cnt}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('chaseChart').innerHTML=MEMBER_CFG.map(m=>{
+    const cnt=countByStatus(m.status);
+    return `<div class="mini-bar-row" onclick="openChaserReport('${m.status}')">
+      <div class="mini-bar-label" style="color:${m.color};font-weight:700;">${m.name}</div>
+      <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${Math.round(cnt/LIMIT*100)}%;background:${m.color}"></div></div>
+      <div class="mini-bar-val" style="color:${m.color};font-weight:700;">${cnt}</div>
+    </div>`;
+  }).join('');
+
+  const stages=['アポ訪問','未経験案件獲得','人選中','人材紹介','見学会日程調整中','見学会日程決定','見学会実施','結果待ち','初日同行'];
+  const phMax=Math.max(...stages.map(s=>state2.deals.filter(d=>d.stage===s).length),1);
+  document.getElementById('phaseSummaryBars').innerHTML=stages.map((s,i)=>{
+    const cnt=state2.deals.filter(d=>d.stage===s).length;
+    const col=STAGE_COLORS[s]||'#6b7280';
+    return `<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;cursor:pointer;border-radius:6px;transition:background 0.12s;" onclick="openReport('phase:${s}')" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background=''">
+      <span style="font-size:11px;font-weight:700;color:${col};width:20px;">${circleStage(s)}</span>
+      <span style="font-size:11px;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s}</span>
+      <div class="mini-bar-bg" style="width:50px;flex:none;"><div class="mini-bar-fill" style="width:${cnt?Math.max(Math.round(cnt/phMax*100),5):0}%;background:${col}"></div></div>
+      <span style="font-family:'DM Mono',monospace;font-size:11px;color:${col};font-weight:700;width:16px;text-align:right;">${cnt}</span>
+    </div>`;
+  }).join('');
+}
+
+// ════ CUSTOMER FILTERS & LIST ════
+function buildFilterChips(){
+  const sts=['全て','既存顧客','未顧客','田中追い','伊波追い','尾上追い'];
+  document.getElementById('statusChips').innerHTML=sts.map(s=>`<div class="filter-chip ${(state2.filterStatus===s||(state2.filterStatus===''&&s==='全て'))?'active':''}" onclick="setStFilter('${s==='全て'?'':s}')">${s}</div>`).join('');
+  const inds=['全て','建築','設備','電気','土木','空調','計装','プラント','その他'];
+  document.getElementById('industryChips').innerHTML=inds.map(i=>`<div class="filter-chip ${(state2.filterIndustry===i||(state2.filterIndustry===''&&i==='全て'))?'active':''}" onclick="setIndFilter('${i==='全て'?'':i}')">${i}</div>`).join('');
+  // Update chaser filter select
+  const cf=document.getElementById('chaserFilter'); if(cf) cf.value=state2.filterChaser;
+}
+function setStFilter(v){state2.filterStatus=v;renderCustomers();}
+function setIndFilter(v){state2.filterIndustry=v;renderCustomers();}
+function setChaserF(v){state2.filterChaser=v;renderCustomers();}
+function filterQ(q){state2.searchQ=q;renderCustomers();}
+
+function renderCustomers(){
+  buildFilterChips();
+  const q=state2.searchQ.toLowerCase();
+  let data=state.companies.filter(c=>{
+    if(q&&!c.company.toLowerCase().includes(q)&&!c.keyname.toLowerCase().includes(q)) return false;
+    if(state2.filterStatus&&c.status!==state2.filterStatus) return false;
+    if(state2.filterIndustry&&c.industry!==state2.filterIndustry) return false;
+    if(state2.filterChaser&&!c.status.includes(state2.filterChaser)) return false;
+    return true;
+  });
+  const cc=document.getElementById('coCount');
+  if(cc) cc.textContent=data.length+'社';
+  const list=document.getElementById('customerList');
+  if(!data.length){list.innerHTML='<div class="empty-state"><div class="e-icon">🔍</div>該当する企業が見つかりません</div>';return;}
+  list.innerHTML=data.map((c,i)=>{
+    const col=av(i);
+    const sc=STATUS_COLOR[c.status]||'var(--text2)';
+    const chaseLabel={'田中追い':'田中','伊波追い':'伊波','尾上追い':'尾上'}[c.status];
+    const chaseCol={'田中追い':'var(--tanaka)','伊波追い':'var(--inami)','尾上追い':'var(--onoe)'}[c.status];
+    const mail=c.email?`<a href="mailto:${esc(c.email)}" class="cust-email" onclick="event.stopPropagation()">✉ ${esc(c.email)}</a>`:`<span style="color:var(--text3);font-size:11px;">—</span>`;
+    // Approach status
+    const ap=getApproachStatus(c);
+    const apDot=ap.ok?'#059669':ap.hasHistory?'#dc2626':'#d1d5db';
+    const apText=ap.ok?`✓ アプローチ可（${ap.days}日経過）`:ap.hasHistory?`✕ 禁止中（残${14-ap.days}日）`:'初回アプローチ可';
+    const apStyle=ap.ok?'color:#065f46;background:#d1fae5;border:1px solid #6ee7b7;':ap.hasHistory?'color:#dc2626;background:#fef2f2;border:1px solid #fca5a5;':'color:#6b7280;background:#f3f4f6;border:1px solid #d1d5db;';
+    const contactCnt=(c.contacts||[]).length;
+    return `<div class="cust-card" style="cursor:pointer;" onclick="openCompanyDetail(${c.id})">
+      <div class="cust-top">
+        <div style="width:34px;height:34px;border-radius:9px;background:${col}22;color:${col};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;position:relative;">
+          ${c.company[0]}
+          <span style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:${apDot};border:2px solid var(--surface);"></span>
+        </div>
+        <div class="cust-info">
+          <div class="cust-company" style="color:var(--accent);text-decoration:underline;text-underline-offset:2px;">${esc(c.company)}${c.branch?` <span style="font-size:10px;color:var(--text3);font-weight:400;text-decoration:none;">${esc(c.branch)}</span>`:''}</div>
+          <div class="cust-keyname">${c.keyname?`👤 ${esc(c.keyname)}`:'—'}</div>
+          <div class="cust-industry-tag">${c.industry||''} ${c.phone?'· '+c.phone:''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;" onclick="event.stopPropagation()">
+          <select class="status-select" onchange="changeStatus(${c.id},this)" style="color:${sc}">
+            <option value="既存顧客"${c.status==='既存顧客'?' selected':''}>既存顧客</option>
+            <option value="未顧客"${c.status==='未顧客'?' selected':''}>未顧客</option>
+            <option value="田中追い"${c.status==='田中追い'?' selected':''}>田中追い</option>
+            <option value="伊波追い"${c.status==='伊波追い'?' selected':''}>伊波追い</option>
+            <option value="尾上追い"${c.status==='尾上追い'?' selected':''}>尾上追い</option>
+          </select>
+          ${chaseLabel?`<span style="font-size:11px;font-weight:700;color:${chaseCol}">${chaseLabel}</span>`:''}
+          ${c.existingInfo?`<span style="font-size:10px;color:var(--success);">💴</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;${apStyle}">${apText}</span>
+        <div style="display:flex;gap:8px;align-items:center;" onclick="event.stopPropagation()">
+          ${mail}
+          ${c.url?`<a href="${esc(c.url)}" target="_blank" style="font-size:10px;color:var(--accent);">🔗</a>`:''}
+          ${contactCnt?`<span style="font-size:10px;color:var(--text3);">📋 ${contactCnt}件</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════ APPROACH STATUS LOGIC ════
+function getApproachStatus(c) {
+  const contacts = c.contacts || [];
+  if (!contacts.length) return { ok: true, hasHistory: false, days: null };
+  // Find latest contact date
+  let latest = null;
+  contacts.forEach(ct => {
+    const d = new Date(ct.date);
+    if (!latest || d > latest) latest = d;
+  });
+  if (!latest) return { ok: true, hasHistory: false, days: null };
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  latest.setHours(0,0,0,0);
+  const days = Math.floor((today - latest) / (1000*60*60*24));
+  return { ok: days >= 14, hasHistory: true, days };
+}
+
+function getLatestContactDate(c) {
+  const contacts = c.contacts || [];
+  if (!contacts.length) return null;
+  let latest = null;
+  contacts.forEach(ct => {
+    const d = new Date(ct.date);
+    if (!latest || d > latest) latest = d;
+  });
+  return latest ? latest.toLocaleDateString('ja-JP') : null;
+}
+
+// ════ COMPANY DETAIL PAGE ════
+let currentCompanyId = null;
+
+function openCompanyDetail(id) {
+  currentCompanyId = id;
+  const c = state.companies.find(x => x.id === id);
+  if (!c) return;
+
+  // Set header
+  const col = av(state.companies.indexOf(c));
+  document.getElementById('cd-name').textContent = c.company + (c.branch ? ` (${c.branch})` : '');
+  document.getElementById('cd-meta').textContent = [c.industry, c.keyname ? `👤 ${c.keyname}` : '', c.phone || ''].filter(Boolean).join(' · ');
+
+  // Approach badge in header
+  const ap = getApproachStatus(c);
+  const latestDate = getLatestContactDate(c);
+  let badgeHtml;
+  if (!ap.hasHistory) {
+    badgeHtml = `<span class="approach-none">🔵 初回可</span>`;
+  } else if (ap.ok) {
+    badgeHtml = `<span class="approach-ok">✓ アプローチ可<br><span style="font-size:10px;font-weight:400;">最終: ${latestDate}（${ap.days}日経過）</span></span>`;
+  } else {
+    badgeHtml = `<span class="approach-ng">✕ 禁止中（残${14-ap.days}日）<br><span style="font-size:10px;font-weight:400;">最終: ${latestDate}</span></span>`;
+  }
+  document.getElementById('cd-approach-badge').innerHTML = badgeHtml;
+
+  // Render body
+  renderCompanyDetailBody(c);
+
+  // Show page
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-companyDetail').classList.add('active');
+  // sidebar
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('si-customers').classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-customers').classList.add('active');
+  // scroll to top
+  document.getElementById('cd-body').scrollTop = 0;
+}
+
+function renderCompanyDetailBody(c) {
+  const col = av(state.companies.indexOf(c));
+  const sc = STATUS_COLOR[c.status] || 'var(--text2)';
+
+  let html = `<div style="padding:16px;">`;
+
+  // ── Status + basic info ──
+  html += `<div class="detail-section">
+    <div class="detail-section-title">📋 基本情報</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+      <select class="status-select" onchange="changeStatusDetail(${c.id},this)" style="color:${sc}">
+        <option value="既存顧客"${c.status==='既存顧客'?' selected':''}>既存顧客</option>
+        <option value="未顧客"${c.status==='未顧客'?' selected':''}>未顧客</option>
+        <option value="田中追い"${c.status==='田中追い'?' selected':''}>田中追い</option>
+        <option value="伊波追い"${c.status==='伊波追い'?' selected':''}>伊波追い</option>
+        <option value="尾上追い"${c.status==='尾上追い'?' selected':''}>尾上追い</option>
+      </select>
+      ${c.industry?`<span class="badge badge-${c.industry}">${c.industry}</span>`:''}
+      ${c.existingInfo?`<span style="background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:600;">💴 既存取引先</span>`:''}
+    </div>
+    <div class="info-grid">
+      ${c.phone?`<div class="info-chip"><div class="info-chip-label">電話番号</div><div class="info-chip-val"><a href="tel:${c.phone}" style="color:var(--accent);">📞 ${esc(c.phone)}</a></div></div>`:''}
+      ${c.keyname?`<div class="info-chip"><div class="info-chip-label">キーマン</div><div class="info-chip-val">👤 ${esc(c.keyname)}</div></div>`:''}
+      ${c.url?`<div class="info-chip" style="grid-column:1/-1;"><div class="info-chip-label">URL</div><div class="info-chip-val"><a href="${esc(c.url)}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ${esc(c.url)}</a></div></div>`:''}
+    </div>
+    ${c.memo?`<div style="margin-top:8px;padding:10px 12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-wrap;border:1px solid var(--border);">${esc(c.memo)}</div>`:''}
+  </div>`;
+
+  // ── Billing info ──
+  if (c.existingInfo) {
+    const e = c.existingInfo;
+    html += `<div class="detail-section">
+      <div class="detail-section-title">💴 請求・支払情報</div>
+      <div class="billing-mini">
+        ${e.closeDay?`<div class="billing-mini-row"><span class="billing-mini-label">締め日</span><span class="billing-mini-val">${esc(e.closeDay)}${e.earlyClose?' (早締め有)':''}</span></div>`:''}
+        ${e.payDay?`<div class="billing-mini-row"><span class="billing-mini-label">入金日</span><span class="billing-mini-val">${esc(e.payDay)}</span></div>`:''}
+        ${e.sendTo?`<div class="billing-mini-row"><span class="billing-mini-label">送付先</span><span class="billing-mini-val">${esc(e.sendTo)}</span></div>`:''}
+        ${e.sendMethod?`<div class="billing-mini-row"><span class="billing-mini-label">送付方法</span><span class="billing-mini-val">${esc(e.sendMethod)}</span></div>`:''}
+        ${e.email?`<div class="billing-mini-row"><span class="billing-mini-label">メール</span><span class="billing-mini-val"><a href="mailto:${e.email.split('/')[0].trim()}" style="color:var(--accent);">📧 ${esc(e.email)}</a></span></div>`:''}
+        ${e.emailTo?`<div class="billing-mini-row"><span class="billing-mini-label">宛先</span><span class="billing-mini-val">${esc(e.emailTo)}</span></div>`:''}
+        ${e.address?`<div class="billing-mini-row"><span class="billing-mini-label">住所</span><span class="billing-mini-val" style="font-size:11px;">${esc(e.address)}</span></div>`:''}
+        ${e.note?`<div class="billing-mini-row"><span class="billing-mini-label">備考</span><span class="billing-mini-val">${esc(e.note)}</span></div>`:''}
+      </div>
+    </div>`;
+  }
+
+  // ── Contact history add form ──
+  html += `<div class="detail-section">
+    <div class="detail-section-title">📞 接触履歴を追加</div>
+    <div class="contact-add-box">
+      <div class="contact-add-row">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">接触日</label>
+          <input class="form-input" type="date" id="ct-date" value="${new Date().toISOString().slice(0,10)}" style="font-size:12px;padding:7px 10px;">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">キーマン名</label>
+          <input class="form-input" id="ct-keyname" placeholder="${c.keyname||'担当者名'}" style="font-size:12px;padding:7px 10px;">
+        </div>
+      </div>
+      <div class="contact-add-row">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">アプローチ方法</label>
+          <select class="form-select" id="ct-method" style="font-size:12px;padding:7px 10px;">
+            <option value="📞 電話">📞 電話</option>
+            <option value="📧 メール">📧 メール</option>
+            <option value="🤝 訪問">🤝 訪問</option>
+            <option value="💬 商談">💬 商談</option>
+            <option value="📄 資料送付">📄 資料送付</option>
+            <option value="✅ 成果あり">✅ 成果あり</option>
+            <option value="📝 その他">📝 その他</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">担当者（自社）</label>
+          <select class="form-select" id="ct-staff" style="font-size:12px;padding:7px 10px;">
+            <option value="田中">田中</option>
+            <option value="伊波">伊波</option>
+            <option value="尾上">尾上</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:8px;margin-top:8px;">
+        <label class="form-label">内容・メモ</label>
+        <textarea class="form-input" id="ct-note" rows="2" placeholder="接触内容、反応、次のアクションなど..." style="font-size:12px;padding:7px 10px;min-height:60px;"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:100%;" onclick="addContact(${c.id})">📋 接触履歴を登録</button>
+    </div>
+  </div>`;
+
+  // ── Contact history list ──
+  const contacts = (c.contacts || []).sort((a,b) => new Date(b.date) - new Date(a.date));
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const METHOD_BG = {
+    '📞 電話':'#dbeafe','📧 メール':'#d1fae5','🤝 訪問':'#ffedd5',
+    '💬 商談':'#fef3c7','📄 資料送付':'#ede9fe','✅ 成果あり':'#d1fae5','📝 その他':'#f3f4f6'
+  };
+
+  html += `<div class="detail-section">
+    <div class="detail-section-title">📋 接触履歴 <span style="background:var(--surface2);padding:1px 7px;border-radius:10px;color:var(--text3);font-size:10px;font-weight:400;border:1px solid var(--border);">${contacts.length}件</span></div>`;
+
+  if (!contacts.length) {
+    html += `<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">接触履歴がありません。<br>上のフォームから追加してください。</div>`;
+  } else {
+    html += `<div class="contact-timeline">`;
+    contacts.forEach((ct, idx) => {
+      const d = new Date(ct.date); d.setHours(0,0,0,0);
+      const days = Math.floor((today - d) / (1000*60*60*24));
+      const daysStr = days === 0 ? '本日' : days === 1 ? '1日前' : `${days}日前`;
+      const daysClass = days < 14 ? 'recent' : 'ok';
+      const bg = METHOD_BG[ct.method] || '#f3f4f6';
+      const isLatest = idx === 0;
+      html += `<div class="contact-item" ${isLatest?'style="background:#fafbff;border-radius:8px;padding:12px 10px;margin:0 -10px;"':''}>
+        <div class="contact-dot" style="background:${bg};margin-top:2px;">${(ct.method||'📝').split(' ')[0]}</div>
+        <div class="contact-body">
+          <div class="contact-date">
+            <strong>${new Date(ct.date).toLocaleDateString('ja-JP')}</strong>
+            <span class="contact-days ${daysClass}">${daysStr}</span>
+            ${isLatest?'<span style="font-size:10px;background:#eff6ff;color:var(--accent);padding:1px 6px;border-radius:4px;font-weight:600;">最新</span>':''}
+          </div>
+          <div class="contact-keyname">👤 ${esc(ct.keyname||'—')} <span style="font-size:10px;color:var(--text3);font-weight:400;">（担当: ${esc(ct.staff||'—')}）</span></div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:3px;font-weight:600;">${esc(ct.method||'—')}</div>
+          ${ct.note?`<div class="contact-text">${esc(ct.note)}</div>`:''}
+        </div>
+        <button class="contact-del" onclick="deleteContact(${c.id},'${ct.id}')" title="削除">✕</button>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  html += `</div>`; // /padding:16px
+
+  document.getElementById('cd-body').innerHTML = html;
+}
+
+function changeStatusDetail(id, sel) {
+  changeStatus(id, sel);
+  // Re-render the approach badge
+  const c = state.companies.find(x => x.id === id);
+  if (!c) return;
+  const ap = getApproachStatus(c);
+  const latestDate = getLatestContactDate(c);
+  let badgeHtml;
+  if (!ap.hasHistory) {
+    badgeHtml = `<span class="approach-none">🔵 初回可</span>`;
+  } else if (ap.ok) {
+    badgeHtml = `<span class="approach-ok">✓ アプローチ可<br><span style="font-size:10px;font-weight:400;">最終: ${latestDate}（${ap.days}日経過）</span></span>`;
+  } else {
+    badgeHtml = `<span class="approach-ng">✕ 禁止中（残${14-ap.days}日）<br><span style="font-size:10px;font-weight:400;">最終: ${latestDate}</span></span>`;
+  }
+  document.getElementById('cd-approach-badge').innerHTML = badgeHtml;
+}
+
+function addContact(cid) {
+  const c = state.companies.find(x => x.id === cid);
+  if (!c) return;
+  const date = document.getElementById('ct-date').value;
+  const keyname = document.getElementById('ct-keyname').value.trim() || c.keyname || '—';
+  const method = document.getElementById('ct-method').value;
+  const staff = document.getElementById('ct-staff').value;
+  const note = document.getElementById('ct-note').value.trim();
+  if (!date) return alert('接触日を入力してください');
+  if (!c.contacts) c.contacts = [];
+  c.contacts.push({ id: Date.now().toString(), date, keyname, method, staff, note });
+  // Update lastContact
+  const ap = getApproachStatus(c);
+  c.lastContact = getLatestContactDate(c);
+  // Clear form
+  document.getElementById('ct-keyname').value = '';
+  document.getElementById('ct-note').value = '';
+  document.getElementById('ct-date').value = new Date().toISOString().slice(0,10);
+  // Re-render detail
+  openCompanyDetail(cid);
+  renderDashboard();
+}
+
+function deleteContact(cid, contactId) {
+  const c = state.companies.find(x => x.id === cid);
+  if (!c || !c.contacts) return;
+  if (!confirm('この接触履歴を削除しますか？')) return;
+  c.contacts = c.contacts.filter(ct => ct.id !== contactId);
+  c.lastContact = getLatestContactDate(c);
+  openCompanyDetail(cid);
+  renderDashboard();
+}
+
+function renderBillingMini(e){
+  if(!e) return '';
+  const parts=[];
+  if(e.closeDay) parts.push(`締め日: ${e.closeDay}${e.earlyClose?' (早締め有)':''}`);
+  if(e.payDay) parts.push(`入金: ${e.payDay}`);
+  if(e.sendMethod) parts.push(`送付: ${e.sendMethod}`);
+  if(!parts.length) return '';
+  return `<div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:11px;color:#065f46;line-height:1.5;">💴 ${parts.join(' ｜ ')}</div>`;
+}
+
+function changeStatus(id, sel){
+  const c=state.companies.find(x=>x.id===id); if(!c) return;
+  const ns=sel.value, os=c.status;
+  if(CHASE.includes(ns)&&ns!==os&&countByStatus(ns)>=LIMIT){
+    alert(`「${ns}」は上限${LIMIT}件です。`); sel.value=os; return;
+  }
+  c.status=ns; sel.style.color=STATUS_COLOR[ns]||'var(--text2)';
+  renderDashboard();
+  if(state2.filterStatus||state2.filterIndustry||state2.filterChaser||state2.searchQ) renderCustomers();
+}
+
+function deleteCustomer(id){
+  if(confirm('この企業を削除しますか？')){
+    state.companies=state.companies.filter(c=>c.id!==id);
+    renderCustomers(); renderDashboard();
+  }
+}
+
+// ════ ADD CUSTOMER ════
+function chkLimit(sel){
+  const w=document.getElementById('limitWarn');
+  if(CHASE.includes(sel.value)&&countByStatus(sel.value)>=LIMIT){w.style.display='block';w.textContent=`⚠ ${sel.value}は上限${LIMIT}件です`;}
+  else w.style.display='none';
+}
+function addCustomer(){
+  const company=document.getElementById('c-company').value.trim();
+  if(!company) return alert('企業名は必須です');
+  const status=document.getElementById('c-status').value;
+  if(CHASE.includes(status)&&countByStatus(status)>=LIMIT) return alert(`「${status}」は上限${LIMIT}件です。`);
+  const {date}=nowDT();
+  state.companies.unshift({
+    id:Date.now(), company,
+    branch:document.getElementById('c-branch').value.trim(),
+    industry:document.getElementById('c-industry').value||'',
+    phone:document.getElementById('c-phone').value.trim(),
+    keyname:document.getElementById('c-name').value.trim(),
+    url:document.getElementById('c-url').value.trim(),
+    memo:document.getElementById('c-memo').value.trim(),
+    status, chaser:'', lastContact:date, existingInfo:null, activities:[],
+  });
+  closeModal('addCustomer');
+  ['c-company','c-branch','c-phone','c-name','c-url','c-memo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  renderCustomers(); renderDashboard();
+}
+
+// ════ PIPELINE / PHASE ════
+function renderPipeline(){
+  const stages=['アポ訪問','未経験案件獲得','人選中','人材紹介','見学会日程調整中','見学会日程決定','見学会実施','結果待ち','初日同行'];
+  document.getElementById('pipelineBoard').innerHTML=stages.map((stage,idx)=>{
+    const deals=state2.deals.filter(d=>d.stage===stage);
+    const col=STAGE_COLORS[stage]||'#6b7280';
+    const num=['①','②','③','④','⑤','⑥','⑦','⑧','⑨'][idx];
+    return `<div class="pipeline-col">
+      <div class="pipeline-col-header" style="border-color:${col}">
+        <span class="pipeline-col-title" style="color:${col}">${num} ${stage}</span>
+        <span class="pipeline-count">${deals.length}</span>
+      </div>
+      ${deals.map(d=>`<div class="deal-card" onclick="openDealModal(${d.id})">
+        <div class="deal-name">${esc(d.name)}</div>
+        <div class="deal-company">${esc(d.company)} / ${esc(d.customer)}</div>
+        <div class="prob-bar"><div class="prob-fill" style="width:100%;background:${col}"></div></div>
+      </div>`).join('')}
+      ${!deals.length?'<div style="font-size:11px;color:var(--text3);text-align:center;padding:14px 0;">案件なし</div>':''}
+    </div>`;
+  }).join('');
+}
+
+function openDealModal(id){
+  const d=state2.deals.find(x=>x.id===id); if(!d) return;
+  state2.currentDealId=id;
+  document.getElementById('ds-title').textContent=d.name;
+  document.getElementById('ds-sub').textContent=`${d.company} / ${d.customer}`;
+  const col=STAGE_COLORS[d.stage]||'#6b7280';
+  document.getElementById('ds-stage-badge').innerHTML=`<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;background:${col}18;color:${col};border:1px solid ${col}30;">${circleStage(d.stage)} ${d.stage}</span>`;
+  document.getElementById('ds-phase-sel').value=d.stage;
+  document.getElementById('ds-loading').style.display='flex';
+  document.getElementById('ds-result').style.display='none';
+  openModal('dealSummary');
+  fetchDealSummary(d);
+}
+function updateDealPhase(){
+  const d=state2.deals.find(x=>x.id===state2.currentDealId); if(!d) return;
+  d.stage=document.getElementById('ds-phase-sel').value;
+  const col=STAGE_COLORS[d.stage]||'#6b7280';
+  document.getElementById('ds-stage-badge').innerHTML=`<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;background:${col}18;color:${col};border:1px solid ${col}30;">${circleStage(d.stage)} ${d.stage}</span>`;
+  renderPipeline(); renderDashboard();
+}
+function deleteDeal(){
+  if(!confirm('この案件を削除しますか？')) return;
+  state2.deals=state2.deals.filter(d=>d.id!==state2.currentDealId);
+  closeModal('dealSummary'); renderPipeline(); renderDashboard();
+}
+async function fetchDealSummary(d){
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:`建設業・人材紹介営業の案件を分析して日本語で要約してください。\n案件名: ${d.name}\n企業: ${d.company}\n担当者: ${d.customer}\nフェーズ: ${d.stage}\nメモ: ${d.memo||'なし'}\n\n【案件概要】【リスク・注意点】【次のアクション提案（3つ）】の形式で。`}]})});
+    const data=await res.json();
+    document.getElementById('ds-loading').style.display='none';
+    document.getElementById('ds-result').style.display='block';
+    document.getElementById('ds-result').textContent=data.content?.map(b=>b.text||'').join('')||'AI応答を取得できませんでした';
+  }catch(e){
+    document.getElementById('ds-loading').style.display='none';
+    document.getElementById('ds-result').style.display='block';
+    document.getElementById('ds-result').textContent='AI分析を実行できませんでした。';
+  }
+}
+function addDeal(){
+  const name=document.getElementById('d-name').value.trim();
+  if(!name) return alert('案件名を入力してください');
+  state2.deals.push({id:Date.now(),name,company:document.getElementById('d-company').value.trim()||'—',customer:document.getElementById('d-customer').value.trim()||'—',stage:document.getElementById('d-stage').value,memo:document.getElementById('d-memo').value.trim()});
+  closeModal('addDeal');
+  ['d-name','d-company','d-customer','d-memo'].forEach(id=>document.getElementById(id).value='');
+  renderPipeline(); renderDashboard();
+}
+
+// ════ AI INSIGHTS ════
+async function runAnalysis(type){
+  const cfg={
+    risk:{title:'⚠️ リスク検知分析',prompt:`建設業CRM リスク分析:\nフェーズ案件:\n${state2.deals.map(d=>`${d.name}/${d.company}/${d.stage}`).join('\n')}\n追客企業:\n${state.companies.filter(c=>CHASE.includes(c.status)).slice(0,20).map(c=>`${c.company}(${c.industry}):${c.status} 最終:${c.lastContact||'不明'}`).join('\n')}\nリスクの高い案件と対処法を日本語で具体的に。`},
+    opportunity:{title:'🚀 チャンス発見',prompt:`既存顧客からのチャンス分析:\n${state.companies.filter(c=>c.status==='既存顧客').slice(0,25).map(c=>`${c.company}(${c.industry})`).join('\n')}\n建設業・人材紹介の観点から追加提案機会を日本語で。`},
+    forecast:{title:'📊 フェーズ進捗予測',prompt:`フェーズ管理案件の進捗を予測:\n${state2.deals.map(d=>`${d.name}/${d.company}/現在:${d.stage}`).join('\n')}\n各案件の推奨アクションを日本語で。`},
+  };
+  const{title,prompt}=cfg[type];
+  document.getElementById('insightTitle').textContent=title;
+  document.getElementById('insightContent').innerHTML='<div class="loading-row"><div class="spinner"></div>AIが分析中...</div>';
+  document.getElementById('insightResult').style.display='block';
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
+    const data=await res.json();
+    document.getElementById('insightContent').innerHTML=`<div class="ai-result-box">${esc(data.content?.map(b=>b.text||'').join('')||'分析できませんでした')}</div>`;
+  }catch(e){document.getElementById('insightContent').innerHTML='<div style="color:var(--danger);font-size:12px;">⚠ エラーが発生しました</div>';}
+}
+
+// ════ SUMMARY ════
+async function genSummary(){
+  const notes=document.getElementById('sumNotes').value.trim();
+  if(!notes) return alert('商談メモを入力してください');
+  const cust=document.getElementById('sumCust').value.trim();
+  document.getElementById('sumResult').style.display='block';
+  document.getElementById('sumOutput').innerHTML='<div class="loading-row"><div class="spinner"></div>AIが要約生成中...</div>';
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:`建設業・人材紹介営業の商談メモを要約:\n顧客:${cust||'未指定'}\nメモ:\n${notes}\n\n【商談概要】【顧客の課題】【提案内容】【次のアクション】の形式で。`}]})});
+    const data=await res.json();
+    document.getElementById('sumOutput').textContent=data.content?.[0]?.text||'要約を生成できませんでした';
+  }catch(e){document.getElementById('sumOutput').textContent='エラーが発生しました。';}
+}
+function copySummary(){navigator.clipboard.writeText(document.getElementById('sumOutput').innerText).then(()=>alert('コピーしました！'));}
+function saveSummary(){
+  state2.savedSummaries.unshift({customer:document.getElementById('sumCust').value||'無名',text:document.getElementById('sumOutput').innerText,date:new Date().toLocaleDateString('ja-JP')});
+  document.getElementById('savedSummaries').innerHTML=state2.savedSummaries.map(s=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:600;font-size:13px;">${esc(s.customer)}</span><span style="font-size:10px;color:var(--text3);">${s.date}</span></div><div style="font-size:12px;color:var(--text2);line-height:1.6;">${esc(s.text).substring(0,150)}...</div></div>`).join('');
+  alert('保存しました！');
+}
+
+// ════ REPORTS ════
+function openReport(type, sub){
+  if(sub) type=type+':'+sub;
+  if(['田中追い','伊波追い','尾上追い'].includes(type)){openChaserReport(type);return;}
+  let title='',subtitle='',companies=[],deals=[],isPhase=false;
+  if(type==='total'){title='全企業一覧';subtitle=state.companies.length+'社';companies=[...state.companies];}
+  else if(type==='existing'){title='既存顧客一覧';companies=state.companies.filter(c=>c.status==='既存顧客');subtitle=companies.length+'社';}
+  else if(type==='chasing'){title='追客企業一覧（全担当）';companies=state.companies.filter(c=>CHASE.includes(c.status));subtitle=companies.length+'社';}
+  else if(type==='phase'){title='フェーズ管理 全案件';deals=[...state2.deals];subtitle=deals.length+'件';isPhase=true;}
+  else if(type.startsWith('industry:')){const ind=type.split(':')[1];title=`業種：${ind}`;companies=state.companies.filter(c=>c.industry===ind);subtitle=companies.length+'社';}
+  else if(type.startsWith('phase:')){const s=type.split(':')[1];title=`フェーズ：${s}`;deals=state2.deals.filter(d=>d.stage===s);subtitle=deals.length+'件';isPhase=true;}
+  else{title='企業一覧';companies=[...state.companies];}
+  document.getElementById('rpt-title').textContent=title;
+  document.getElementById('rpt-subtitle').textContent=subtitle;
+  if(isPhase){
+    document.getElementById('rpt-stats').innerHTML=`<div class="rpt-stat-box"><div class="rpt-stat-num" style="color:var(--accent3)">${deals.length}</div><div class="rpt-stat-label">案件数</div></div>`;
+    document.getElementById('rpt-actions').innerHTML='';
+    document.getElementById('rpt-table').innerHTML=deals.length?`<table class="rpt-tbl"><thead><tr><th>案件名</th><th>企業名</th><th>フェーズ</th><th>担当者</th></tr></thead><tbody>${deals.map((d,i)=>`<tr style="background:${i%2?'var(--surface2)':'var(--surface)'}"><td style="font-weight:600;color:var(--text);">${esc(d.name)}</td><td>${esc(d.company)}</td><td><span style="font-size:10px;font-weight:700;color:${STAGE_COLORS[d.stage]||'#6b7280'};background:${STAGE_COLORS[d.stage]||'#6b7280'}18;padding:2px 7px;border-radius:5px;">${circleStage(d.stage)} ${d.stage}</span></td><td>👤 ${esc(d.customer)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty-state">案件なし</div>';
+  } else {
+    const bySt={};companies.forEach(c=>{bySt[c.status]=(bySt[c.status]||0)+1;});
+    document.getElementById('rpt-stats').innerHTML=`<div class="rpt-stat-box"><div class="rpt-stat-num" style="color:var(--accent)">${companies.length}</div><div class="rpt-stat-label">合計</div></div>`+Object.entries(bySt).map(([st,cnt])=>`<div class="rpt-stat-box"><div class="rpt-stat-num" style="color:${STATUS_COLOR[st]||'var(--text2)'}">${cnt}</div><div class="rpt-stat-label">${st}</div></div>`).join('');
+    window._rptCos=[...companies];
+    document.getElementById('rpt-actions').innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+      <span style="font-size:11px;font-weight:600;color:var(--text2);align-self:center;">一括変更：</span>
+      <button class="btn btn-sm btn-ghost" style="font-size:11px;" onclick="bulkRpt('未顧客')">未顧客</button>
+      <button class="btn btn-sm" style="background:#d1fae5;color:#065f46;border:1px solid#6ee7b7;font-size:11px;" onclick="bulkRpt('既存顧客')">既存顧客</button>
+      <button class="btn btn-sm" style="background:#ffedd5;color:#9a3412;border:1px solid#fdba74;font-size:11px;" onclick="bulkRpt('田中追い')">田中追い</button>
+      <button class="btn btn-sm" style="background:#ede9fe;color:#5b21b6;border:1px solid#c4b5fd;font-size:11px;" onclick="bulkRpt('伊波追い')">伊波追い</button>
+      <button class="btn btn-sm" style="background:#e0f2fe;color:#075985;border:1px solid#7dd3fc;font-size:11px;" onclick="bulkRpt('尾上追い')">尾上追い</button>
+      <input id="rptQ" class="search-input" style="width:160px;font-size:11px;padding:5px 9px;margin-left:4px;" placeholder="絞り込み…" oninput="filterRptRows(this.value)">
+    </div>`;
+    document.getElementById('rpt-table').innerHTML=companies.length?`<table class="rpt-tbl"><thead><tr><th>企業名</th><th>業種</th><th>ステータス</th><th>キーマン</th><th>最終接触日</th><th>変更</th></tr></thead><tbody>${companies.map((c,i)=>`<tr class="rpt-row" data-nm="${esc(c.company).toLowerCase()}" style="background:${i%2?'var(--surface2)':'var(--surface)'}">
+      <td style="cursor:pointer;" onclick="closeModal('report');"><div style="font-weight:600;color:var(--text);">${esc(c.company)}${c.branch?`<br><span style="font-size:10px;color:var(--text3);">${esc(c.branch)}</span>`:''}</div></td>
+      <td>${c.industry?`<span class="badge badge-${c.industry}">${c.industry}</span>`:'—'}</td>
+      <td><span class="badge badge-${c.status}">${c.status}</span></td>
+      <td>${esc(c.keyname)||'—'}</td>
+      <td style="white-space:nowrap;">${c.lastContact||'—'}</td>
+      <td onclick="event.stopPropagation();"><select onchange="rptInline(${c.id},this)" style="font-size:11px;padding:3px 5px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Noto Sans JP',sans-serif;outline:none;cursor:pointer;"><option value="">変更…</option><option value="未顧客">未顧客</option><option value="既存顧客">既存顧客</option><option value="田中追い">田中追い</option><option value="伊波追い">伊波追い</option><option value="尾上追い">尾上追い</option></select></td>
+    </tr>`).join('')}</tbody></table>`:'<div class="empty-state">該当企業なし</div>';
+  }
+  openModal('report');
+}
+function filterRptRows(q){const ql=q.toLowerCase();document.querySelectorAll('#rpt-table .rpt-row').forEach(r=>{r.style.display=(!ql||r.dataset.nm.includes(ql))?'':'none';});}
+function rptInline(id,sel){const ns=sel.value;if(!ns)return;const c=state.companies.find(x=>x.id===id);if(!c)return;if(CHASE.includes(ns)&&ns!==c.status&&countByStatus(ns)>=LIMIT){alert(`「${ns}」は上限${LIMIT}件です。`);sel.value='';return;}c.status=ns;sel.value='';const row=sel.closest('tr');if(row)row.cells[2].innerHTML=`<span class="badge badge-${ns}">${ns}</span>`;renderDashboard();}
+function bulkRpt(ns){const ids=(window._rptCos||[]).map(c=>c.id);if(!ids.length)return;if(!confirm(`${ids.length}社を「${ns}」に変更しますか？`))return;if(CHASE.includes(ns)){const adding=ids.filter(id=>{const c=state.companies.find(x=>x.id===id);return c&&c.status!==ns;}).length;const cur=countByStatus(ns);if(cur+adding>LIMIT&&!confirm(`上限(${LIMIT})を超えますが実行しますか？`))return;}ids.forEach(id=>{const c=state.companies.find(x=>x.id===id);if(c)c.status=ns;});closeModal('report');renderDashboard();renderCustomers();}
+
+// ════ CHASER REPORT ════
+function openChaserReport(status){
+  state2.chaserStatus=status;
+  const m=MEMBER_CFG.find(x=>x.status===status);
+  const name=m?m.name:status, color=m?m.color:'var(--accent)';
+  const cos=state.companies.filter(c=>c.status===status);
+  const cnt=cos.length, full=cnt>=LIMIT, near=cnt>=12;
+  document.getElementById('cr-title').textContent=`${name} 担当企業レポート`;
+  document.getElementById('cr-subtitle').textContent=`上限 ${LIMIT}社 | 現在 ${cnt}社`;
+  const badge=full?`<span class="over-badge">⚠ ${cnt-LIMIT}社超過</span>`:near?`<span class="near-badge">⚠ 残り${LIMIT-cnt}社</span>`:`<span class="ok-badge">✓ 正常</span>`;
+  document.getElementById('cr-stats').innerHTML=`<div class="rpt-stat-box"><div class="rpt-stat-num" style="color:${full?'var(--danger)':near?'var(--warning)':color}">${cnt}</div><div class="rpt-stat-label">担当企業数</div></div><div class="rpt-stat-box"><div class="rpt-stat-num" style="color:var(--text3)">${LIMIT}</div><div class="rpt-stat-label">上限</div></div><div style="display:flex;align-items:center;padding-left:10px;">${badge}</div>`;
+  renderChaserList(cos);
+  openModal('chaserReport');
+}
+function renderChaserList(cos){
+  const el=document.getElementById('cr-list');
+  if(!cos.length){el.innerHTML='<div class="empty-state">担当企業なし</div>';return;}
+  el.innerHTML=`<table class="rpt-tbl"><thead><tr><th style="width:30px;">No.</th><th>企業名</th><th>業種</th><th>最終接触日</th><th>操作</th></tr></thead><tbody>${cos.map((c,i)=>`<tr style="background:${i%2?'var(--surface2)':'var(--surface)'}">
+    <td style="color:var(--text3);">${i+1}</td>
+    <td><div style="font-weight:600;color:var(--text);">${esc(c.company)}${c.branch?`<br><span style="font-size:10px;color:var(--text3);">${esc(c.branch)}</span>`:''}</div>${c.keyname?`<div style="font-size:11px;color:var(--text3);">👤 ${esc(c.keyname)}</div>`:''}</td>
+    <td>${c.industry?`<span class="badge badge-${c.industry}">${c.industry}</span>`:'—'}</td>
+    <td style="white-space:nowrap;">${c.lastContact||'—'}</td>
+    <td onclick="event.stopPropagation();">
+      <div style="display:flex;gap:5px;align-items:center;">
+        <button class="chaser-remove-btn" onclick="chaserRemove(${c.id},'未顧客')">外す</button>
+        <select onchange="chaserMove(${c.id},this)" style="font-size:11px;padding:3px 5px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Noto Sans JP',sans-serif;outline:none;cursor:pointer;">
+          <option value="">移動先…</option>
+          <option value="未顧客">未顧客</option><option value="既存顧客">既存顧客</option>
+          <option value="田中追い">田中追い</option><option value="伊波追い">伊波追い</option><option value="尾上追い">尾上追い</option>
+        </select>
+      </div>
+    </td>
+  </tr>`).join('')}</tbody></table>`;
+}
+function chaserRemove(id,ns){const c=state.companies.find(x=>x.id===id);if(!c)return;if(CHASE.includes(ns)&&ns!==c.status&&countByStatus(ns)>=LIMIT){alert(`「${ns}」は上限${LIMIT}件です。`);return;}c.status=ns;const cos=state.companies.filter(x=>x.status===state2.chaserStatus);renderChaserList(cos);updateChaserStats(cos);renderDashboard();}
+function chaserMove(id,sel){const ns=sel.value;if(!ns)return;chaserRemove(id,ns);sel.value='';}
+function updateChaserStats(cos){const m=MEMBER_CFG.find(x=>x.status===state2.chaserStatus);const color=m?m.color:'var(--accent)';const cnt=cos.length,full=cnt>=LIMIT,near=cnt>=12;const badge=full?`<span class="over-badge">⚠ ${cnt-LIMIT}社超過</span>`:near?`<span class="near-badge">⚠ 残り${LIMIT-cnt}社</span>`:`<span class="ok-badge">✓ 正常（${cnt}社）</span>`;document.getElementById('cr-stats').innerHTML=`<div class="rpt-stat-box"><div class="rpt-stat-num" style="color:${full?'var(--danger)':near?'var(--warning)':color}">${cnt}</div><div class="rpt-stat-label">担当企業数</div></div><div class="rpt-stat-box"><div class="rpt-stat-num" style="color:var(--text3)">${LIMIT}</div><div class="rpt-stat-label">上限</div></div><div style="display:flex;align-items:center;padding-left:10px;">${badge}</div>`;document.getElementById('cr-subtitle').textContent=`上限 ${LIMIT}社 | 現在 ${cnt}社`;}
+function chaserMoveAll(ns){const cos=state.companies.filter(c=>c.status===state2.chaserStatus);if(!cos.length)return;if(!confirm(`${cos.length}社全てを「${ns}」に変更しますか？`))return;if(CHASE.includes(ns)&&ns!==state2.chaserStatus){const adding=cos.filter(c=>c.status!==ns).length;if(countByStatus(ns)+adding>LIMIT&&!confirm(`「${ns}」の上限(${LIMIT})を超えますが実行しますか？`))return;}cos.forEach(c=>c.status=ns);const remaining=state.companies.filter(c=>c.status===state2.chaserStatus);renderChaserList(remaining);updateChaserStats(remaining);renderDashboard();}
+
+// ════ INIT ════
+renderDashboard();
+renderCustomers();
+renderPipeline();
+</script>
+</body>
+</html>
