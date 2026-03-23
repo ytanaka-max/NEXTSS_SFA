@@ -1,39 +1,171 @@
-// CSVエクスポート機能（修正版）
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>NEXTsalesAI - SFA Management System</title>
+    <style>
+        :root {
+            --next-navy: #001529;
+            --next-blue: #1890ff;
+            --next-green: #52c41a;
+            --next-bg: #f0f2f5;
+            --border-color: #d9d9d9;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Meiryo, sans-serif; background-color: var(--next-bg); display: flex; height: 100vh; overflow: hidden; }
+
+        /* サイドバー */
+        .sidebar { width: 240px; background: var(--next-navy); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .logo { padding: 25px; font-size: 24px; font-weight: bold; background: #002140; text-align: center; color: #fff; }
+        .logo span { color: var(--next-blue); }
+        .nav-item { padding: 15px 25px; color: #a6adb4; cursor: pointer; border-left: 4px solid transparent; transition: 0.3s; }
+        .nav-item.active { background: var(--next-blue); color: #fff; border-left-color: #fff; }
+
+        /* メインエリア */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .header { height: 65px; background: white; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; box-shadow: 0 1px 4px rgba(0,21,41,.08); }
+        
+        /* ボタン */
+        .actions { display: flex; gap: 10px; align-items: center; }
+        .btn { padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border-color); cursor: pointer; font-size: 14px; transition: 0.2s; background: white; font-weight: 500; }
+        .btn-primary { background: var(--next-blue); color: white; border-color: var(--next-blue); }
+        .btn:hover { opacity: 0.8; }
+        #csv-upload { display: none; }
+
+        /* ダッシュボード */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px 30px; }
+        .stat-card { background: white; padding: 18px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border-top: 3px solid var(--next-blue); }
+        .stat-label { font-size: 12px; color: #8c8c8c; margin-bottom: 5px; }
+        .stat-value { font-size: 22px; font-weight: bold; color: #262626; }
+
+        /* テーブル */
+        .list-container { flex: 1; padding: 0 30px 30px; overflow-y: auto; }
+        .table-wrapper { background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        table { border-collapse: collapse; width: 100%; font-size: 13px; table-layout: fixed; }
+        th { background: #fafafa; padding: 14px 12px; text-align: left; border-bottom: 2px solid #f0f0f0; position: sticky; top: 0; z-index: 10; font-weight: 600; color: #595959; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #262626; }
+        tr:hover { background-color: #e6f7ff; }
+
+        .badge-apo { background: #f6ffed; border: 1px solid #b7eb8f; color: var(--next-green); padding: 2px 8px; border-radius: 2px; font-weight: bold; }
+        .anes-row { background-color: #fffbe6; }
+        .company-link { color: var(--next-blue); font-weight: 600; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">NEXT<span>salesAI</span></div>
+        <div class="nav-list">
+            <div class="nav-item active">🏢 顧客一覧</div>
+            <div class="nav-item">📊 ダッシュボード</div>
+            <div class="nav-item">⚙️ 設定</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div style="font-size: 18px; font-weight: bold; color: #262626;">SFA ターゲットリスト管理</div>
+            <div class="actions">
+                <input type="file" id="csv-upload" accept=".csv">
+                <button class="btn" onclick="document.getElementById('csv-upload').click()">📥 CSVインポート</button>
+                <button class="btn" onclick="exportCSV()">📤 CSVエクスポート</button>
+                <button class="btn btn-primary">＋ 新規顧客追加</button>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="stat-card"><div class="stat-label">総ターゲット</div><div class="stat-value">919 社</div></div>
+            <div class="stat-card"><div class="stat-label">アポ獲得数</div><div class="stat-value">42 件</div></div>
+            <div class="stat-card"><div class="stat-label">未着手</div><div class="stat-value">859 社</div></div>
+            <div class="stat-card"><div class="stat-label">システム状態</div><div class="stat-value" style="color:var(--next-green); font-size:14px;">● オンライン</div></div>
+        </div>
+
+        <div class="list-container">
+            <div class="table-wrapper">
+                <table id="sfa-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th style="width: 180px;">企業名</th>
+                            <th style="width: 120px;">支店名</th>
+                            <th style="width: 80px;">職種</th>
+                            <th style="width: 60px;">アポ</th>
+                            <th style="width: 100px;">売上規模</th>
+                            <th style="width: 110px;">最終接触日</th>
+                            <th>対応内容メモ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="anes-row">
+                            <td>1</td>
+                            <td><a href="#" class="company-link">アネス</a></td>
+                            <td></td>
+                            <td>空調</td>
+                            <td><span class="badge-apo">〇</span></td>
+                            <td></td>
+                            <td>2026/02/17</td>
+                            <td>担当：まつした様 5/8 16時～ まつしたさん退職 後任林様</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><a href="#" class="company-link">大成温調</a></td>
+                            <td>東京本社</td>
+                            <td>設備</td>
+                            <td><span class="badge-apo">〇</span></td>
+                            <td>385億円</td>
+                            <td>2024/11/20</td>
+                            <td>岡本部長 担当者不在。明日以降再架電</td>
+                        </tr>
+                        <tr>
+                            <td>100</td>
+                            <td><a href="#" class="company-link">石井組</a></td>
+                            <td></td>
+                            <td>建築</td>
+                            <td></td>
+                            <td></td>
+                            <td>2026/02/27</td>
+                            <td>担当：勝様 清水建設下請多 派遣単価折り合い×</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CSVエクスポート機能（文字化け対策版）
         function exportCSV() {
             const table = document.getElementById("sfa-table");
             let csvContent = "";
             const rows = table.querySelectorAll("tr");
             
-            for (let i = 0; i < rows.length; i++) {
-                const row = [], cols = rows[i].querySelectorAll("td, th");
-                for (let j = 0; j < cols.length; j++) {
-                    // セル内のテキストを取得し、カンマや改行をエスケープ
-                    let data = cols[j].innerText.replace(/"/g, '""');
-                    row.push('"' + data + '"');
-                }
-                csvContent += row.join(",") + "\r\n";
-            }
+            rows.forEach((rowElement) => {
+                const rowData = [];
+                const cols = rowElement.querySelectorAll("td, th");
+                
+                cols.forEach((col) => {
+                    let data = col.innerText.replace(/\r?\n/g, " ").replace(/"/g, '""');
+                    rowData.push('"' + data + '"');
+                });
+                csvContent += rowData.join(",") + "\r\n";
+            });
 
-            // 日本語文字化け防止のためのBOM付与
+            // BOMを付与してUTF-8としてBlob作成
             const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
             const blob = new Blob([bom, csvContent], { type: "text/csv;charset=utf-8;" });
             
-            // ダウンロード用リンクの生成と実行
-            if (navigator.msSaveBlob) { // IE用
-                navigator.msSaveBlob(blob, "NEXTsalesAI_SFA_List.csv");
-            } else {
-                const link = document.createElement("a");
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", "NEXTsalesAI_SFA_List.csv");
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "NEXTsalesAI_SFA_List.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 100);
         }
 
-        // CSVインポート機能（ファイル選択時に自動実行）
+        // CSVインポート機能
         document.getElementById('csv-upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -53,12 +185,10 @@
                     cols.forEach((col, i) => {
                         const td = document.createElement('td');
                         let val = col.replace(/^"|"$/g, '').replace(/""/g, '"'); 
-                        if (i === 4 && val === '〇') {
+                        if (i === 1) {
+                            td.innerHTML = `<a href="#" class="company-link">${val}</a>`;
+                        } else if (i === 4 && val.includes('〇')) {
                             td.innerHTML = '<span class="badge-apo">〇</span>';
-                        } else if (i === 1) {
-                            td.style.color = 'var(--next-blue)';
-                            td.style.fontWeight = '600';
-                            td.innerText = val;
                         } else {
                             td.innerText = val;
                         }
@@ -66,7 +196,10 @@
                     });
                     tbody.appendChild(row);
                 });
-                alert('インポートが完了しました。100行のデータを表示中。');
+                alert('インポート成功: データを更新しました。');
             };
             reader.readAsText(file, "UTF-8");
         });
+    </script>
+</body>
+</html>
