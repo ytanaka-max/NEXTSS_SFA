@@ -2,48 +2,91 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>SFAリスト_1-100行目</title>
+    <title>SFAリスト_修正版</title>
     <style>
-        table { border-collapse: collapse; width: 100%; font-size: 12px; font-family: sans-serif; }
-        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; vertical-align: top; }
-        th { background-color: #f2f2f2; position: sticky; top: 0; z-index: 10; }
+        table { border-collapse: collapse; width: 100%; font-size: 12px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; position: sticky; top: 0; }
         tr:nth-child(even) { background-color: #fafafa; }
         .highlight { background-color: #fff0f0; font-weight: bold; }
-        .center { text-align: center; }
-        .wrap { white-space: pre-wrap; word-break: break-all; max-width: 300px; }
     </style>
 </head>
 <body>
-    <h3>SFAリスト 1-100行目 (修正版)</h3>
     <table>
         <thead>
             <tr>
-                <th>No</th>
                 <th>企業名</th>
                 <th>支店名/事業部</th>
                 <th>売上高</th>
                 <th>職種</th>
                 <th>電話番号</th>
-                <th>アポ</th>
+                <th>アポイント</th>
                 <th>最終接触日</th>
                 <th>内容/備考</th>
             </tr>
         </thead>
         <tbody>
-            <tr><td>1</td><td class="highlight">アネス</td><td></td><td></td><td>空調</td><td>03-3913-4123</td><td class="center">〇</td><td>2026/02/17</td><td class="wrap">担当：まつした様 5/8 16時～ まつしたさん退職 後任林様 いま人員充足</td></tr>
-            <tr><td>2</td><td>大成温調</td><td>東京本社</td><td>385億円</td><td>設備</td><td>03-5742-7331</td><td class="center">〇</td><td>2024/11/20</td><td class="wrap">岡本部長 担当者不在。明日以降再架電</td></tr>
-            <tr><td>3</td><td>太平電業</td><td>東京本社</td><td></td><td>電気</td><td>03-5213-7211</td><td class="center">〇</td><td>2026/03/17</td><td class="wrap">浅井部長 東京支社 0366837316 派遣受入なし/ 本社 都築部長 5/15 9:00~</td></tr>
-            <tr><td>4</td><td>大栄電気</td><td></td><td></td><td>電気</td><td>03-6738-8888</td><td class="center">〇</td><td>2026/03/17</td><td class="wrap">nextss.y.tanaka が更新</td></tr>
-            <tr><td>5</td><td>新菱冷熱工業</td><td></td><td></td><td>設備</td><td>03-3357-2151</td><td class="center">〇</td><td>2024/10/28</td><td class="wrap">本店でない。電気計装なら行けるかも</td></tr>
-            <tr><td>6</td><td>櫻井工業</td><td></td><td>206億円</td><td>設備</td><td></td><td class="center">〇</td><td>2026/03/18</td><td class="wrap">工事部/高柳 y.tanaka</td></tr>
-            <tr><td>7</td><td>日本電技</td><td></td><td>415億円</td><td>電気</td><td>045-438-1211</td><td class="center">〇</td><td>2026/03/19</td><td class="wrap">保坂業務課長 会議中 / 真鍋支店長 会議中再度</td></tr>
-            <tr><td>8</td><td>東急建設</td><td></td><td>2,856億円</td><td>建築</td><td>03-5466-5122</td><td class="center">〇</td><td>2024/11/15</td><td class="wrap">担当：カタヤマ様 11/21 9:30面談時期により興味あり</td></tr>
-            <tr><td>9</td><td>東急建設</td><td></td><td></td><td>建築</td><td>03-5466-5008</td><td class="center">〇</td><td></td><td class="wrap">ヨシイ様</td></tr>
-            <tr><td>10</td><td>中電工</td><td>東京本部</td><td>1,571億円</td><td>電気</td><td>03-6300-0680</td><td class="center">〇</td><td>2024/10/08</td><td class="wrap">山中さん/メアド取得 10/16 11:00挨拶アポ</td></tr>
-            <tr><td>25</td><td>五洋建設</td><td>東京建築支店</td><td>6,177億円</td><td>建築</td><td>03-3817-7600</td><td class="center">〇</td><td></td><td class="wrap">クサノ様 10/2 11:00訪問 2/6 設備部：03-3817-8725</td></tr>
-            <tr><td>50</td><td>大都</td><td></td><td></td><td></td><td>03-3584-0125</td><td class="center">〇</td><td>2025/02/05</td><td class="wrap">小林様 2/10 16:00アポ</td></tr>
-            <tr><td>100</td><td>石井組</td><td></td><td></td><td>建築</td><td>03-3413-2451</td><td class="center"></td><td>2026/02/27</td><td class="wrap">担当：勝様 清水建設下請多 派遣単価折り合い×</td></tr>
-        </tbody>
+            <tr>
+                <td class="highlight">アネス</td>
+                <td></td>
+                <td></td>
+                <td>空調</td>
+                <td>03-3913-4123</td>
+                <td>〇</td>
+                <td>2026/02/17</td>
+                <td>担当：まつした様 5/8 16時～ まつしたさん退職 後任林様</td>
+            </tr>
+            <tr>
+                <td>大成温調</td>
+                <td>東京本社</td>
+                <td>385億円</td>
+                <td>設備</td>
+                <td>03-5742-7331</td>
+                <td>〇</td>
+                <td>2024/11/20</td>
+                <td>担当者不在。明日以降再架電</td>
+            </tr>
+            <tr>
+                <td>太平電業</td>
+                <td>東京本社</td>
+                <td></td>
+                <td>電気</td>
+                <td>03-5213-7211</td>
+                <td>〇</td>
+                <td>2026/03/17</td>
+                <td>東京支社 0366837316 派遣受入なし/ 本社 都築部長 /浅井部長 5/15 9:00~</td>
+            </tr>
+            <tr>
+                <td>大栄電気</td>
+                <td></td>
+                <td></td>
+                <td>電気</td>
+                <td>03-6738-8888</td>
+                <td>〇</td>
+                <td>2026/03/17</td>
+                <td>nextss.y.tanaka が更新</td>
+            </tr>
+            <tr>
+                <td>新菱冷熱工業</td>
+                <td></td>
+                <td></td>
+                <td>設備</td>
+                <td>03-3357-2151</td>
+                <td>〇</td>
+                <td>2024/10/28</td>
+                <td>本店でない。電気計装なら行けるかも</td>
+            </tr>
+            <tr>
+                <td>櫻井工業</td>
+                <td></td>
+                <td>206億円</td>
+                <td>設備</td>
+                <td></td>
+                <td>〇</td>
+                <td>2026/03/18</td>
+                <td>工事部/高柳 y.tanaka</td>
+            </tr>
+            </tbody>
     </table>
 </body>
 </html>
