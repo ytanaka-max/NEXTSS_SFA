@@ -1,73 +1,45 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>SalesAI CRM - Professional Edition</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
-/* --- 既存のスタイルを全て継承 --- */
-:root {
-  --bg: #f0f2f5; --surface: #ffffff; --surface2: #f4f6f9; --border: #e2e6ed;
-  --accent: #2563eb; --accent2: #0891b2; --accent3: #ea580c;
-  --text: #1a2332; --text2: #4b5563; --text3: #9ca3af;
-  --success: #059669; --warning: #d97706; --danger: #dc2626;
-  --nav-h: 60px; --shadow: 0 1px 3px rgba(0,0,0,0.08);
-}
-/* ... (中略：お送りいただいた全スタイルを適用) ... */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
-
-/* 追加スタイル: 請求管理と警告用 */
-.billing-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-.billing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.billing-item { text-align: center; }
-.billing-label { font-size: 10px; color: #15803d; font-weight: 700; }
-.billing-val { font-size: 13px; font-weight: 600; color: #166534; }
-
-.alert-lock { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 10px; margin-bottom: 16px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-
-/* レイアウト調整 */
-.sidebar-desktop { width: 230px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-.main-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.content { flex: 1; overflow-y: auto; padding-bottom: 80px; }
-.page { display: none; padding: 16px; }
-.page.active { display: block; }
-
-/* サイドバーCSVセクション */
-.sidebar-footer { padding: 16px; border-top: 1px solid var(--border); background: var(--surface2); }
-.csv-box { margin-bottom: 12px; }
-.csv-label { font-size: 10px; font-weight: 800; color: var(--text3); margin-bottom: 6px; display: block; }
+/* ... (前回のスタイルを継承) ... */
+.sidebar-logo-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+.progress-container { background: var(--surface2); border-radius: 10px; padding: 15px; margin-top: 10px; }
+.progress-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.progress-label { font-size: 11px; width: 80px; color: var(--text2); }
+.progress-bar-bg { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--accent); transition: width 0.5s ease-out; }
+.progress-val { font-family: 'DM Mono'; font-size: 11px; width: 30px; text-align: right; }
 </style>
 </head>
 <body>
 
 <div class="sidebar-desktop">
-  <div class="sidebar-logo" style="padding:20px;">
-    <div style="font-family:'Syne'; font-size:22px; font-weight:800; color:var(--accent);">SalesAI</div>
-    <div style="font-size:9px; color:var(--text3); letter-spacing:1px;">CONSTRUCTION CRM</div>
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-title">NEXTsalesAI</div>
+    <div style="font-size:9px; color:var(--text3); letter-spacing:1px; margin-top:2px;">CONSTRUCTION CRM</div>
   </div>
   
-  <nav style="flex:1; padding:10px 0;">
-    <div class="sidebar-item active" onclick="showPage('dashboard')">📊 ダッシュボード</div>
-    <div class="sidebar-item" onclick="showPage('customers')">🏢 企業・現場管理</div>
-    <div class="sidebar-item" onclick="showPage('pipeline')">🎯 フェーズ管理</div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section">分析・管理</div>
+    <div class="sidebar-item active" onclick="showPage('dashboard', this)"><span class="sidebar-item-icon">📊</span>ダッシュボード</div>
+    <div class="sidebar-item" onclick="showPage('customers', this)"><span class="sidebar-item-icon">🏢</span>企業・現場管理</div>
+    <div class="sidebar-item" onclick="showPage('pipeline', this)"><span class="sidebar-item-icon">🎯</span>フェーズ管理</div>
   </nav>
 
   <div class="sidebar-footer">
     <div class="csv-box">
       <span class="csv-label">📋 SFA全リスト</span>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-        <button class="btn btn-ghost btn-xs" onclick="handleExport('all')">📥 出力</button>
-        <label class="btn btn-ghost btn-xs">📤 取込<input type="file" hidden onchange="handleImport(this, 'all')"></label>
+        <button class="btn btn-ghost btn-xs" onclick="exportData('all')">📥 出力</button>
+        <label class="btn btn-ghost btn-xs">📤 取込<input type="file" hidden onchange="importCSV(this, 'all')"></label>
       </div>
     </div>
-    <div class="csv-box">
+    <div class="csv-box" style="margin-top:10px;">
       <span class="csv-label" style="color:var(--success)">💴 既存顧客データ</span>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-        <button class="btn btn-ghost btn-xs" style="color:var(--success)" onclick="handleExport('existing')">📥 出力</button>
-        <label class="btn btn-ghost btn-xs" style="color:var(--success)">📤 取込<input type="file" hidden onchange="handleImport(this, 'existing')"></label>
+        <button class="btn btn-ghost btn-xs" style="color:var(--success)" onclick="exportData('existing')">📥 出力</button>
+        <label class="btn btn-ghost btn-xs" style="color:var(--success)">📤 取込<input type="file" hidden onchange="importCSV(this, 'existing')"></label>
       </div>
     </div>
   </div>
@@ -75,129 +47,133 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); display: 
 
 <div class="main-wrap">
   <div class="topbar">
-    <div class="topbar-logo">Dashboard</div>
-    <button class="topbar-btn">＋ 企業追加</button>
+    <div id="page-title" style="font-weight:700; font-size:16px;">Dashboard</div>
+    <button class="topbar-btn" onclick="openAddModal()">＋ 企業追加</button>
   </div>
 
   <div class="content">
     <div class="page active" id="page-dashboard">
-      <div class="kpi-scroll" style="display:flex; gap:12px; margin-bottom:20px;">
+      <div class="kpi-scroll">
         <div class="kpi-card blue">
-          <div class="kpi-label">総ターゲット</div>
-          <div class="kpi-value" id="kpi-total">1,280</div>
+          <div class="kpi-label">総アプローチ企業</div>
+          <div class="kpi-value" id="stat-total">0</div>
         </div>
         <div class="kpi-card green">
-          <div class="kpi-label">既存稼働数</div>
-          <div class="kpi-value" id="kpi-existing">42</div>
+          <div class="kpi-label">既存・稼働中現場</div>
+          <div class="kpi-value" id="stat-existing">0</div>
+        </div>
+        <div class="kpi-card orange">
+          <div class="kpi-label">14日以内 未接触</div>
+          <div class="kpi-value" id="stat-alert" style="color:var(--danger)">0</div>
         </div>
       </div>
-      
-      <div class="card">
-        <div class="card-title">直近のアクティビティ</div>
-        <div id="activity-list">
-          </div>
-      </div>
-    </div>
 
-    <div class="page" id="page-customers">
-      <div class="search-wrap"><input type="text" class="search-input" placeholder="🔍 企業名・現場名で検索..."></div>
-      <div id="customer-list-container">
-        <div class="cust-card" onclick="openDetail('大林組 横浜現場')">
-          <div class="cust-top">
-            <div class="cust-company">大林組 横浜現場</div>
-            <span class="badge badge-既存顧客">既存</span>
-          </div>
-          <div class="cust-keyname">所長: 佐藤 様</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="page" id="page-detail">
-      <button class="btn btn-ghost btn-sm" onclick="showPage('customers')" style="margin-bottom:16px;">← 戻る</button>
-      
-      <div id="detail-content">
-        <div class="alert-lock" id="lock-msg" style="display:none;">
-          <span>🚫</span> <span id="lock-text">アプローチ禁止期間中です</span>
-        </div>
-
+      <div class="grid-2">
         <div class="card">
-          <h2 id="det-name" style="font-size:20px; margin-bottom:4px;">企業名</h2>
-          <p id="det-keyman" style="color:var(--text3); font-size:13px; margin-bottom:16px;">現場名 / キーマン</p>
-          
-          <div class="billing-card">
-            <div class="card-title" style="color:#15803d;">請求・支払契約情報</div>
-            <div class="billing-grid">
-              <div class="billing-item"><div class="billing-label">締日</div><div class="billing-val" id="det-cutoff">末日</div></div>
-              <div class="billing-item"><div class="billing-label">支払日</div><div class="billing-val" id="det-payment">翌月末</div></div>
-              <div class="billing-item"><div class="billing-label">方法</div><div class="billing-val" id="det-method">メール</div></div>
+          <div class="card-title">フェーズ別進捗</div>
+          <div id="phase-chart" class="progress-container">
             </div>
-          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">既存顧客：請求方法</div>
+          <div id="billing-chart" class="progress-container">
+            </div>
+        </div>
+      </div>
 
-          <div id="contact-form">
-            <div class="form-group">
-              <label class="form-label">接触履歴入力</label>
-              <textarea id="contact-memo" class="form-input" placeholder="交渉内容を入力..."></textarea>
-            </div>
-            <button class="btn btn-primary" style="width:100%;" onclick="saveContact()">履歴を保存</button>
-          </div>
+      <div class="card" style="margin: 0 14px 14px;">
+        <div class="card-title">最近の営業活動</div>
+        <div id="recent-logs" class="activity-list">
+          <div class="empty-state">データが読み込まれていません</div>
         </div>
       </div>
     </div>
+
+    <div class="page" id="page-customers">...</div>
+    <div class="page" id="page-pipeline">...</div>
   </div>
 </div>
 
 <script>
-// ページ切り替え
-function showPage(id) {
+// --- データ管理用のグローバル変数 ---
+let db = {
+  customers: [] // CSVからここに流し込む
+};
+
+// --- ダッシュボード更新ロジック ---
+function updateDashboard() {
+  const total = db.customers.length;
+  const existing = db.customers.filter(c => c.isExisting === "既存").length;
+  
+  // 14日ルール判定
+  const today = new Date();
+  const alertCount = db.customers.filter(c => {
+    if (!c.lastContactDate) return true;
+    const diff = (today - new Date(c.lastContactDate)) / (1000 * 60 * 60 * 24);
+    return diff > 14 && c.isExisting !== "既存"; // 既存以外で14日以上空いているもの
+  }).length;
+
+  // UI反映
+  document.getElementById('stat-total').innerText = total.toLocaleString();
+  document.getElementById('stat-existing').innerText = existing.toLocaleString();
+  document.getElementById('stat-alert').innerText = alertCount.toLocaleString();
+
+  renderPhaseChart();
+}
+
+function renderPhaseChart() {
+  const phases = ["アプローチ", "アポイント", "案件取得", "当て込み", "見学会", "見学結果", "稼働中"];
+  const container = document.getElementById('phase-chart');
+  container.innerHTML = "";
+
+  phases.forEach(p => {
+    const count = db.customers.filter(c => c.phase === p).length;
+    const percent = db.customers.length > 0 ? (count / db.customers.length * 100) : 0;
+    
+    container.innerHTML += `
+      <div class="progress-row">
+        <div class="progress-label">${p}</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${percent}%"></div></div>
+        <div class="progress-val">${count}</div>
+      </div>
+    `;
+  });
+}
+
+// --- CSVインポート処理 (雛形) ---
+function importCSV(input, type) {
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // ここでCSVをパースしてdb.customersに入れる処理を記述
+    console.log("CSV読み込み完了:", type);
+    // 仮データ生成（動作確認用）
+    mockData(); 
+    updateDashboard();
+    alert(type + "データをインポートしました");
+  };
+  reader.readAsText(file);
+}
+
+// 動作確認用のモック
+function mockData() {
+  db.customers = [
+    { name: "清水建設 A現場", isExisting: "未", phase: "アポイント", lastContactDate: "2026-03-01" },
+    { name: "大成建設 B現場", isExisting: "既存", phase: "稼働中", lastContactDate: "2026-03-20" },
+    { name: "鹿島建設 C現場", isExisting: "未", phase: "アプローチ", lastContactDate: "2026-02-10" }
+  ];
+}
+
+function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-title').innerText = el.innerText.replace(/^[^\w]*/, '');
 }
 
-// 詳細表示ロジック（制限ルール適用）
-function openDetail(name) {
-  showPage('detail');
-  document.getElementById('det-name').innerText = name;
-
-  // ダミーデータを用いた判定例
-  const isExisting = name.includes("大林組"); // 既存顧客判定
-  const lastContactDays = 5; // 最終接触からの経過日数（サンプル）
-  
-  const lockMsg = document.getElementById('lock-msg');
-  const lockText = document.getElementById('lock-text');
-  const contactForm = document.getElementById('contact-form');
-
-  if (isExisting) {
-    lockMsg.style.display = 'flex';
-    lockText.innerText = "既存顧客のため、新規アプローチは禁止されています。";
-    contactForm.style.display = 'none';
-  } else if (lastContactDays <= 14) {
-    lockMsg.style.display = 'flex';
-    lockText.innerText = `最終接触から${lastContactDays}日しか経過していません（14日ルール適用中）`;
-    contactForm.style.display = 'none';
-  } else {
-    lockMsg.style.display = 'none';
-    contactForm.style.display = 'block';
-  }
-}
-
-// CSV出力
-function handleExport(type) {
-  console.log(type + " データのCSVエクスポートを実行");
-  alert(type + " データをCSV出力します");
-}
-
-// CSV入力
-function handleImport(input, type) {
-  const file = input.files[0];
-  if (file) {
-    alert(type + " データを読み込みます: " + file.name);
-  }
-}
-
-function saveContact() {
-  alert("履歴を保存しました");
-  showPage('dashboard');
-}
+// 初期化
+window.onload = updateDashboard;
 </script>
 </body>
 </html>
