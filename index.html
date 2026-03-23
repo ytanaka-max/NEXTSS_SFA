@@ -1,44 +1,232 @@
-<div class="sidebar-nav">
-  <div class="sidebar-section">メイン</div>
-  <div class="sidebar-item active" onclick="showPage('dashboard')">📊 ダッシュボード</div>
-  <div class="sidebar-item" onclick="showPage('customers')">🏢 顧客・現場管理</div>
-  <div class="sidebar-item" onclick="showPage('phase')">🎯 フェーズ管理（進捗）</div>
-  
-  <div class="sidebar-section">データ連携 (CSV)</div>
-  <div class="sidebar-footer">
-      <div style="margin-bottom:12px;">
-          <div style="font-size:10px; color:var(--text3); font-weight:700;">📋 全リスト (SFA)</div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:5px;">
-              <button class="btn btn-ghost btn-xs" onclick="exportCSV('all')">📥 出力</button>
-              <label class="btn btn-ghost btn-xs">📤 取込<input type="file" onchange="importCSV(this, 'all')" hidden></label>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SalesAI CRM - Salesforce Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f3f4f7;
+  --surface: #ffffff;
+  --border: #d8dde6; /* Salesforce-like border */
+  --accent: #0176d3; /* Salesforce Blue */
+  --accent-hover: #014486;
+  --text: #181818;
+  --text2: #444444;
+  --text3: #706e6b;
+  --success: #2e844a;
+  --warning: #dd7a01;
+  --danger: #ba0517;
+  --nav-h: 60px;
+  --shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+/* --- LAYOUT --- */
+.sidebar-desktop { width: 240px; background: #001529; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; }
+.sidebar-logo { padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-logo-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: #fff; }
+.sidebar-nav { padding: 15px 0; flex: 1; }
+.sidebar-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; cursor: pointer; color: #a6adb4; transition: 0.3s; font-size: 14px; }
+.sidebar-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.sidebar-item.active { background: var(--accent); color: #fff; font-weight: 600; }
+
+.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { background: var(--surface); height: 56px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: var(--shadow); z-index: 10; }
+.content-area { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* --- DASHBOARD CARDS --- */
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; box-shadow: var(--shadow); }
+.stat-label { font-size: 12px; color: var(--text3); font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 800; color: var(--accent); font-family: 'Syne', sans-serif; }
+
+/* --- PHASE MANAGEMENT --- */
+.phase-scroller { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; height: 100%; }
+.phase-column { min-width: 280px; background: #ebedef; border-radius: 8px; display: flex; flex-direction: column; max-height: 100%; }
+.phase-header { padding: 16px; font-weight: 700; border-bottom: 2px solid var(--accent); font-size: 13px; display: flex; justify-content: space-between; }
+.phase-list { padding: 10px; flex: 1; overflow-y: auto; }
+.deal-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+.deal-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+/* --- ALERTS & BADGES --- */
+.alert-banner { padding: 12px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.alert-danger { background: #fff1f0; border: 1px solid #ffa39e; color: var(--danger); }
+.alert-warning { background: #fffbe6; border: 1px solid #ffe58f; color: var(--warning); }
+
+.badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+.badge-existing { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+
+/* --- FORMS --- */
+.card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 20px; }
+.btn { padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border); cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); }
+
+/* --- MODAL --- */
+.page { display: none; }
+.page.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-desktop">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-title">SalesAI</div>
+    <div style="font-size:10px; color:#a6adb4; margin-top:4px;">Construction CRM</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-item active" onclick="showPage('dashboard', this)">📊 ダッシュボード</div>
+    <div class="sidebar-item" onclick="showPage('customers', this)">🏢 企業・現場管理</div>
+    <div class="sidebar-item" onclick="showPage('phase', this)">🎯 フェーズ管理</div>
+    
+    <div style="padding:20px 24px 8px; font-size:11px; color:#555; font-weight:700;">DATA MANAGEMENT</div>
+    <div style="padding:0 20px;">
+        <p style="font-size:10px; color:#888; margin-bottom:4px;">SFA全リスト</p>
+        <div style="display:flex; gap:4px; margin-bottom:12px;">
+            <button class="btn btn-xs" style="background:#222; color:#fff; flex:1;" onclick="exportData('all')">📥 出力</button>
+            <label class="btn btn-xs" style="background:#222; color:#fff; flex:1; text-align:center;">📤 取込<input type="file" hidden onchange="importData(this, 'all')"></label>
+        </div>
+        <p style="font-size:10px; color:#888; margin-bottom:4px;">既存顧客</p>
+        <div style="display:flex; gap:4px;">
+            <button class="btn btn-xs" style="background:#222; color:#fff; flex:1;" onclick="exportData('existing')">📥 出力</button>
+            <label class="btn btn-xs" style="background:#222; color:#fff; flex:1; text-align:center;">📤 取込<input type="file" hidden onchange="importData(this, 'existing')"></label>
+        </div>
+    </div>
+  </nav>
+</div>
+
+<div class="main-content">
+  <div class="topbar">
+    <h2 id="current-page-title" style="font-size:18px;">Dashboard</h2>
+    <div style="display:flex; gap:10px;">
+      <input type="text" placeholder="🔍 企業・現場を検索..." style="padding:6px 12px; border:1px solid var(--border); border-radius:4px; font-size:13px; width:250px;">
+      <button class="btn btn-primary" onclick="alert('新規登録フォームを開きます')">+ 新規登録</button>
+    </div>
+  </div>
+
+  <div class="content-area">
+    
+    <div class="page active" id="page-dashboard">
+      <div class="dashboard-grid">
+        <div class="stat-card"><div class="stat-label">総ターゲット企業</div><div class="stat-value" id="dash-total">1,240</div></div>
+        <div class="stat-card"><div class="stat-label">既存顧客 (稼働中)</div><div class="stat-value" id="dash-existing" style="color:var(--success)">84</div></div>
+        <div class="stat-card"><div class="stat-label">今月の商談数</div><div class="stat-value" id="dash-deals" style="color:var(--warning)">12</div></div>
+        <div class="stat-card"><div class="stat-label">14日以内 未接触</div><div class="stat-value" id="dash-alert" style="color:var(--danger)">45</div></div>
+      </div>
+      
+      <div class="card">
+        <div class="stat-label">フェーズ別進捗状況</div>
+        <div style="height:200px; display:flex; align-items:flex-end; gap:20px; padding-top:20px;">
+          <div style="flex:1; background:var(--accent); height:30%; border-radius:4px 4px 0 0; position:relative;"><span style="position:absolute; top:-20px; width:100%; text-align:center; font-size:12px;">30%</span></div>
+          <div style="flex:1; background:var(--accent); height:50%; border-radius:4px 4px 0 0; position:relative;"><span style="position:absolute; top:-20px; width:100%; text-align:center; font-size:12px;">50%</span></div>
+          <div style="flex:1; background:var(--accent); height:80%; border-radius:4px 4px 0 0; position:relative;"><span style="position:absolute; top:-20px; width:100%; text-align:center; font-size:12px;">80%</span></div>
+          <div style="flex:1; background:var(--success); height:40%; border-radius:4px 4px 0 0; position:relative;"><span style="position:absolute; top:-20px; width:100%; text-align:center; font-size:12px;">40%</span></div>
+        </div>
+        <div style="display:flex; gap:20px; margin-top:10px; font-size:10px; color:var(--text3); text-align:center;">
+          <div style="flex:1;">アプローチ</div><div style="flex:1;">アポイント</div><div style="flex:1;">見学会</div><div style="flex:1;">稼働中</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-customers">
+      <div class="card" id="customer-detail" style="display:none;">
+          <button class="btn btn-xs" onclick="closeDetail()" style="margin-bottom:15px;">← 戻る</button>
+          <div id="alert-container"></div>
+          <h1 id="det-company-name" style="font-size:24px; margin-bottom:5px;">企業名</h1>
+          <p id="det-keyman" style="color:var(--text3); margin-bottom:20px;">現場代理人: 山田太郎</p>
+          
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+              <div>
+                  <div class="stat-label">請求・支払情報</div>
+                  <table style="width:100%; font-size:13px; border-collapse:collapse;">
+                      <tr><td style="padding:8px 0; color:var(--text3);">締日</td><td id="det-cut" style="font-weight:600; text-align:right;">末日</td></tr>
+                      <tr><td style="padding:8px 0; color:var(--text3);">支払日</td><td id="det-pay" style="font-weight:600; text-align:right;">翌月末</td></tr>
+                      <tr><td style="padding:8px 0; color:var(--text3);">請求方法</td><td id="det-method" style="font-weight:600; text-align:right;">メール＆郵送</td></tr>
+                  </table>
+              </div>
+              <div id="contact-input-section">
+                  <div class="stat-label">新規履歴入力</div>
+                  <textarea id="contact-memo" style="width:100%; height:80px; padding:10px; border:1px solid var(--border); border-radius:4px;" placeholder="架電内容を入力..."></textarea>
+                  <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="saveLog()">履歴を保存</button>
+              </div>
           </div>
       </div>
-      <div>
-          <div style="font-size:10px; color:var(--success); font-weight:700;">💴 既存顧客データ</div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:5px;">
-              <button class="btn btn-ghost btn-xs" style="color:var(--success); border-color:var(--success);" onclick="exportCSV('existing')">📥 出力</button>
-              <label class="btn btn-ghost btn-xs" style="color:var(--success); border-color:var(--success);">📤 取込<input type="file" onchange="importCSV(this, 'existing')" hidden></label>
+      
+      <div id="customer-list-view" class="dashboard-grid">
+          <div class="deal-card" onclick="openDetail('サンプル建設')">
+              <div style="display:flex; justify-content:space-between;">
+                  <span style="font-weight:700;">サンプル建設 (株)</span>
+                  <span class="badge badge-existing">既存</span>
+              </div>
+              <div style="font-size:12px; color:var(--text3); margin-top:8px;">現場：渋谷再開発工事</div>
+              <div style="font-size:11px; color:var(--danger); margin-top:4px;">⚠️最終接触：12日前 (田中)</div>
           </div>
       </div>
+    </div>
+
+    <div class="page" id="page-phase">
+      <div class="phase-scroller">
+        <div class="phase-column"><div class="phase-header">アプローチ</div><div class="phase-list" id="p-1"></div></div>
+        <div class="phase-column"><div class="phase-header">アポイント</div><div class="phase-list" id="p-2"></div></div>
+        <div class="phase-column"><div class="phase-header">案件取得</div><div class="phase-list" id="p-3"></div></div>
+        <div class="phase-column"><div class="phase-header">見学会</div><div class="phase-list" id="p-4"></div></div>
+        <div class="phase-column"><div class="phase-header">稼働</div><div class="phase-list" id="p-5"></div></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<div class="page" id="page-companyDetail">
-    <div id="cd-body" class="section-pad">
-        <div id="approach-warning" style="display:none; margin-bottom:15px;"></div>
+<script>
+// 基本ロジック
+function showPage(pageId, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + pageId).classList.add('active');
+    
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    
+    document.getElementById('current-page-title').innerText = el.innerText.trim();
+}
 
-        <div class="card" style="margin-bottom:15px;">
-            <div class="card-title">請求・支払情報</div>
-            <div class="info-grid">
-                <div class="info-chip"><div class="info-chip-label">締日</div><div id="val-billing-cut" class="info-chip-val">-</div></div>
-                <div class="info-chip"><div class="info-chip-label">支払日</div><div id="val-payment-day" class="info-chip-val">-</div></div>
-                <div class="info-chip"><div class="info-chip-label">請求方法</div><div id="val-billing-method" class="info-chip-val">-</div></div>
-            </div>
-        </div>
-        
-        <div id="contact-input-area" class="contact-add-box">
-            <textarea class="form-input" id="contact-memo" placeholder="テレアポ・商談内容を入力..."></textarea>
-            <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="saveContact()">履歴を保存</button>
-        </div>
-    </div>
-</div>
+function openDetail(name) {
+    document.getElementById('customer-list-view').style.display = 'none';
+    const detail = document.getElementById('customer-detail');
+    detail.style.display = 'block';
+    document.getElementById('det-company-name').innerText = name;
+    
+    // サンプルの判定ロジック：二重アポ防止
+    const alertBox = document.getElementById('alert-container');
+    const inputArea = document.getElementById('contact-input-section');
+    
+    // 例：既存顧客の場合
+    if(name === "サンプル建設") {
+        alertBox.innerHTML = `<div class="alert-banner alert-danger">⚠️ 既存顧客のため新規営業アプローチは禁止されています。</div>`;
+        inputArea.style.opacity = '0.3';
+        inputArea.style.pointerEvents = 'none';
+    } else {
+        alertBox.innerHTML = "";
+        inputArea.style.opacity = '1';
+        inputArea.style.pointerEvents = 'all';
+    }
+}
+
+function closeDetail() {
+    document.getElementById('customer-list-view').style.display = 'grid';
+    document.getElementById('customer-detail').style.display = 'none';
+}
+
+function exportData(type) {
+    alert(type + ' のCSVを書き出します。');
+}
+
+function importData(input, type) {
+    alert(type + ' にCSVを読み込みます。');
+}
+</script>
+</body>
+</html>
