@@ -2,124 +2,128 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salesforce SFA View - Page 1 (1-100)</title>
+    <title>SFA Cloud - 顧客管理システム</title>
     <style>
-        :root {
-            --brand-blue: #0176d3;
-            --bg-gray: #f3f3f2;
-            --border-color: #dddbda;
-            --text-main: #181818;
-            --text-sub: #444;
-        }
-        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-gray); color: var(--text-main); }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif; background-color: #f0f2f5; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Utility Bar */
-        .utility-bar { background: #16325c; color: white; padding: 4px 20px; font-size: 11px; display: flex; justify-content: flex-end; }
+        /* サイドバー */
+        .sidebar { width: 220px; background-color: #001529; color: white; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; font-size: 20px; font-weight: bold; background: #002140; text-align: center; }
+        .nav-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid #102a43; transition: 0.3s; }
+        .nav-item:hover { background: #1890ff; }
+        .nav-item.active { background: #1890ff; border-left: 5px solid #fff; }
 
-        /* Salesforce Header */
-        .slds-header { background: white; border-bottom: 1px solid var(--border-color); padding: 12px 24px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .icon-box { background-color: #fc8f67; width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; margin-right: 12px; font-size: 20px; }
-        .title-group h1 { font-size: 18px; margin: 0; font-weight: bold; }
-        .title-group p { font-size: 12px; margin: 0; color: var(--text-sub); }
+        /* メインコンテンツ */
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-bar { height: 60px; background: white; border-bottom: 1px solid #dcdfe6; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; }
+        .user-profile { display: flex; align-items: center; gap: 10px; }
 
-        /* Main Container */
-        .main-content { padding: 16px; }
-        .data-card { background: white; border-radius: 4px; border: 1px solid var(--border-color); box-shadow: 0 2px 2px rgba(0,0,0,0.05); overflow: hidden; }
+        .content-area { padding: 20px; overflow-y: auto; flex: 1; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); padding: 20px; }
         
-        table { border-collapse: collapse; width: 100%; font-size: 13px; table-layout: fixed; }
-        th { background: #fbfbfb; padding: 12px; border-bottom: 2px solid var(--border-color); color: var(--text-sub); text-align: left; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px; }
-        td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        tr:hover { background-color: #f3f9ff; }
+        /* テーブルスタイル */
+        table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 1000px; }
+        th { background-color: #fafafa; padding: 12px 10px; text-align: left; border-bottom: 2px solid #ebedf0; color: #5c6b77; font-weight: bold; }
+        td { padding: 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        tr:hover { background-color: #fafafa; }
 
-        /* Styles for Columns */
-        .col-company { width: 180px; font-weight: bold; color: var(--brand-blue); cursor: pointer; }
-        .col-branch { width: 120px; }
-        .col-type { width: 80px; }
-        .col-sales { width: 100px; }
-        .col-apo { width: 60px; text-align: center; }
-        .col-date { width: 110px; color: #666; }
-        .col-memo { width: auto; color: #555; font-size: 12px; }
-
-        /* Badges */
-        .badge { background: #e0e5ee; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; color: #444; }
-        .apo-check { display: inline-block; width: 20px; height: 20px; background: #3ba755; color: white; border-radius: 50%; text-align: center; line-height: 20px; font-weight: bold; font-size: 12px; }
+        /* ステータスバッジ */
+        .badge-type { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .badge-apo { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+        .highlight-row { background-color: #fffbe6 !important; }
+        .text-memo { color: #8c8c8c; font-size: 12px; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
 </head>
 <body>
 
-    <div class="utility-bar">Salesforce Lightning Console | User: Admin</div>
-
-    <div class="slds-header">
-        <div class="icon-box">🏢</div>
-        <div class="title-group">
-            <p>取引先</p>
-            <h1>SFA 営業リストビュー (1 - 100)</h1>
-        </div>
+    <div class="sidebar">
+        <div class="sidebar-header">SFA Cloud</div>
+        <div class="nav-item">ダッシュボード</div>
+        <div class="nav-item active">顧客一覧</div>
+        <div class="nav-item">アポイント管理</div>
+        <div class="nav-item">売上集計</div>
+        <div class="nav-item">設定</div>
     </div>
 
-    <div class="main-content">
-        <div class="data-card">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="col-company">企業名</th>
-                        <th class="col-branch">支店/事業部</th>
-                        <th class="col-type">職種</th>
-                        <th class="col-sales">売上高</th>
-                        <th class="col-apo">アポ</th>
-                        <th class="col-date">最終接触日</th>
-                        <th class="col-memo">内容/備考</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="col-company">アネス</td>
-                        <td class="col-branch">-</td>
-                        <td class="col-type"><span class="badge">空調</span></td>
-                        <td class="col-sales">-</td>
-                        <td class="col-apo"><span class="apo-check">✓</span></td>
-                        <td class="col-date">2026/02/17</td>
-                        <td class="col-memo">担当：まつした様 5/8 16時～ まつしたさん退職 後任林様 いま人員充足</td>
-                    </tr>
-                    <tr>
-                        <td class="col-company">大成温調</td>
-                        <td class="col-branch">東京本社</td>
-                        <td class="col-type"><span class="badge">設備</span></td>
-                        <td class="col-sales">385億円</td>
-                        <td class="col-apo"><span class="apo-check">✓</span></td>
-                        <td class="col-date">2024/11/20</td>
-                        <td class="col-memo">岡本部長 担当者不在。明日以降再架電</td>
-                    </tr>
-                    <tr>
-                        <td class="col-company">太平電業</td>
-                        <td class="col-branch">東京本社</td>
-                        <td class="col-type"><span class="badge">電気</span></td>
-                        <td class="col-sales">-</td>
-                        <td class="col-apo"><span class="apo-check">✓</span></td>
-                        <td class="col-date">2026/03/17</td>
-                        <td class="col-memo">浅井部長 5/15 9:00~ 派遣受入なし/ 本社 都築部長</td>
-                    </tr>
-                    <tr>
-                        <td class="col-company">大栄電気</td>
-                        <td class="col-branch">-</td>
-                        <td class="col-type"><span class="badge">電気</span></td>
-                        <td class="col-sales">-</td>
-                        <td class="col-apo"><span class="apo-check">✓</span></td>
-                        <td class="col-date">2026/03/17</td>
-                        <td class="col-memo">nextss.y.tanaka が更新</td>
-                    </tr>
-                    <tr>
-                        <td class="col-company">石井組</td>
-                        <td class="col-branch">-</td>
-                        <td class="col-type"><span class="badge">建築</span></td>
-                        <td class="col-sales">-</td>
-                        <td class="col-apo">-</td>
-                        <td class="col-date">2026/02/27</td>
-                        <td class="col-memo">担当：勝様 清水建設下請多 派遣単価折り合い×</td>
-                    </tr>
-                </tbody>
-            </table>
+    <div class="main-container">
+        <div class="top-bar">
+            <div style="font-weight: bold; font-size: 18px;">顧客管理 / リスト表示 (1 - 100行)</div>
+            <div class="user-profile">
+                <span>営業担当：管理者様</span>
+                <div style="width: 32px; height: 32px; background: #ccc; border-radius: 50%;"></div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>企業名</th>
+                            <th>支店/事業部</th>
+                            <th>職種</th>
+                            <th>アポ</th>
+                            <th>売上</th>
+                            <th>最終接触日</th>
+                            <th>内容</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="highlight-row">
+                            <td>1</td>
+                            <td style="font-weight: bold; color: #1890ff;">アネス</td>
+                            <td>-</td>
+                            <td><span class="badge-type">空調</span></td>
+                            <td><span class="badge-apo">〇</span></td>
+                            <td>-</td>
+                            <td>2026/02/17</td>
+                            <td class="text-memo">担当：まつした様 5/8 16時～ まつしたさん退職 後任林様 いま人員充足</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>大成温調</td>
+                            <td>東京本社</td>
+                            <td><span class="badge-type">設備</span></td>
+                            <td><span class="badge-apo">〇</span></td>
+                            <td>385億円</td>
+                            <td>2024/11/20</td>
+                            <td class="text-memo">岡本部長 担当者不在。明日以降再架電</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>太平電業</td>
+                            <td>東京本社</td>
+                            <td><span class="badge-type">電気</span></td>
+                            <td><span class="badge-apo">〇</span></td>
+                            <td>-</td>
+                            <td>2026/03/17</td>
+                            <td class="text-memo">浅井部長 5/15 9:00~ 派遣受入なし/ 本社 都築部長</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>大栄電気</td>
+                            <td>-</td>
+                            <td><span class="badge-type">電気</span></td>
+                            <td><span class="badge-apo">〇</span></td>
+                            <td>-</td>
+                            <td>2026/03/17</td>
+                            <td class="text-memo">nextss.y.tanaka が更新</td>
+                        </tr>
+                        <tr>
+                            <td>100</td>
+                            <td>石井組</td>
+                            <td>-</td>
+                            <td><span class="badge-type">建築</span></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>2026/02/27</td>
+                            <td class="text-memo">担当：勝様 清水建設下請多 派遣単価折り合い×</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
